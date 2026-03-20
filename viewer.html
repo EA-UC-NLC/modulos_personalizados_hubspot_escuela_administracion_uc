@@ -284,6 +284,41 @@
       margin-top: 4px;
     }
 
+    .element-manager {
+      border-top: 1px dashed var(--border);
+      margin-top: 6px;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .manager-title {
+      font-size: 0.76rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .selected-info {
+      font-size: 0.76rem;
+      color: #a6b3c2;
+      background: #0b1118;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 9px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .manager-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
     .mini-btn {
       border: 1px solid var(--border);
       background: #1b2430;
@@ -459,6 +494,21 @@
           <button class="mini-btn primary" onclick="applyNoCodeChanges()">Aplicar sin codigo</button>
           <button class="mini-btn" onclick="syncNoCodeFromHTML()">Sincronizar</button>
         </div>
+
+        <div class="element-manager">
+          <div class="manager-title">Gestor visual de elementos</div>
+          <button id="selectModeBtn" class="mini-btn" onclick="toggleSelectMode()">Activar seleccion en preview</button>
+          <div id="selectedInfo" class="selected-info">Ningun elemento seleccionado</div>
+
+          <div class="manager-actions">
+            <button class="mini-btn" onclick="moveSelected(-1)">Mover arriba</button>
+            <button class="mini-btn" onclick="moveSelected(1)">Mover abajo</button>
+            <button class="mini-btn" onclick="duplicateSelected()">Duplicar</button>
+            <button class="mini-btn" onclick="deleteSelected()">Eliminar</button>
+            <button class="mini-btn" onclick="adjustSpacing(8)">+ Espaciado</button>
+            <button class="mini-btn" onclick="adjustSpacing(-8)">- Espaciado</button>
+          </div>
+        </div>
       </div>
 
       <textarea id="htmlEditor" class="panel hidden" spellcheck="false"></textarea>
@@ -484,6 +534,8 @@
     const panelNoCode = document.getElementById("panelNoCode");
     const tabNoCode = document.getElementById("tabNoCode");
     const tabCode = document.getElementById("tabCode");
+    const selectModeBtn = document.getElementById("selectModeBtn");
+    const selectedInfo = document.getElementById("selectedInfo");
 
     const ncTitle = document.getElementById("ncTitle");
     const ncSubtitle = document.getElementById("ncSubtitle");
@@ -495,9 +547,20 @@
     let originalHTML = "";
     let currentHTML = "";
     let currentView = "desktop";
+    let isSnippet = false;
+    let selectMode = false;
+    let selectedElement = null;
 
     moduleNameEl.textContent = moduleName.replace(/_/g, " ");
     document.title = moduleName.replace(/_/g, " ") + " - Visor HubSpot";
+
+    frame.addEventListener("load", () => {
+      bindFrameSelection();
+      if (selectedElement) {
+        selectedElement = null;
+        updateSelectedInfo();
+      }
+    });
 
     init();
 
@@ -511,6 +574,7 @@
         const res = await fetch(filePath);
         originalHTML = await res.text();
         currentHTML = originalHTML;
+        isSnippet = !/\<html[\s>]/i.test(originalHTML);
         editor.value = originalHTML;
         syncNoCodeFromHTML();
         renderPreview();
@@ -647,6 +711,129 @@
       editor.value = currentHTML;
       renderPreview();
       showToast("Cambios sin codigo aplicados");
+    }
+
+    function toggleSelectMode() {
+      selectMode = !selectMode;
+      selectModeBtn.textContent = selectMode
+        ? "Desactivar seleccion en preview"
+        : "Activar seleccion en preview";
+      selectModeBtn.classList.toggle("primary", selectMode);
+      showToast(selectMode ? "Seleccion activa" : "Seleccion desactivada");
+    }
+
+    function bindFrameSelection() {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+
+      doc.addEventListener("click", (event) => {
+        if (!selectMode) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.tagName === "HTML" || target.tagName === "BODY") return;
+
+        setSelectedElement(target);
+      }, true);
+    }
+
+    function clearSelectionHighlight() {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      doc.querySelectorAll("[data-manager-selected='1']").forEach((el) => {
+        el.style.outline = "";
+        el.style.outlineOffset = "";
+        el.removeAttribute("data-manager-selected");
+      });
+    }
+
+    function setSelectedElement(el) {
+      if (!el) return;
+      clearSelectionHighlight();
+      selectedElement = el;
+      selectedElement.setAttribute("data-manager-selected", "1");
+      selectedElement.style.outline = "2px dashed #00b0db";
+      selectedElement.style.outlineOffset = "2px";
+      updateSelectedInfo();
+    }
+
+    function updateSelectedInfo() {
+      if (!selectedElement) {
+        selectedInfo.textContent = "Ningun elemento seleccionado";
+        return;
+      }
+
+      const tag = selectedElement.tagName.toLowerCase();
+      const text = (selectedElement.textContent || "").trim().replace(/\s+/g, " ").slice(0, 60);
+      selectedInfo.textContent = "Seleccionado: <" + tag + "> " + (text || "(sin texto)");
+    }
+
+    function syncFromFrameDOM() {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+
+      if (isSnippet) {
+        currentHTML = doc.body ? doc.body.innerHTML.trim() : currentHTML;
+      } else {
+        currentHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+      }
+
+      editor.value = currentHTML;
+    }
+
+    function moveSelected(direction) {
+      if (!selectedElement || !selectedElement.parentElement) return;
+
+      const parent = selectedElement.parentElement;
+      const siblings = Array.from(parent.children);
+      const index = siblings.indexOf(selectedElement);
+      if (index === -1) return;
+
+      if (direction < 0 && index > 0) {
+        parent.insertBefore(selectedElement, siblings[index - 1]);
+      }
+
+      if (direction > 0 && index < siblings.length - 1) {
+        const after = siblings[index + 2] || null;
+        parent.insertBefore(selectedElement, after);
+      }
+
+      syncFromFrameDOM();
+      showToast("Elemento movido");
+      setSelectedElement(selectedElement);
+    }
+
+    function duplicateSelected() {
+      if (!selectedElement || !selectedElement.parentElement) return;
+      const clone = selectedElement.cloneNode(true);
+      selectedElement.insertAdjacentElement("afterend", clone);
+      syncFromFrameDOM();
+      showToast("Elemento duplicado");
+      setSelectedElement(clone);
+    }
+
+    function deleteSelected() {
+      if (!selectedElement) return;
+      const toDelete = selectedElement;
+      selectedElement = null;
+      toDelete.remove();
+      syncFromFrameDOM();
+      updateSelectedInfo();
+      showToast("Elemento eliminado");
+    }
+
+    function adjustSpacing(delta) {
+      if (!selectedElement) return;
+      const style = selectedElement.style;
+      const current = parseInt(style.marginBottom || "0", 10) || 0;
+      const next = Math.max(0, current + delta);
+      style.marginBottom = next + "px";
+      syncFromFrameDOM();
+      showToast("Espaciado actualizado");
+      setSelectedElement(selectedElement);
     }
 
     function injectMobileFix(html) {
