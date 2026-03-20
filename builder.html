@@ -309,12 +309,41 @@
       font-weight: 700;
       cursor: pointer;
       min-width: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
 
     .toolbar-btn.active {
       background: #00b0db;
       border-color: #00b0db;
       color: #fff;
+    }
+
+    .toolbar-btn.format {
+      min-width: 36px;
+      padding: 7px 8px;
+      background: #122033;
+      border-color: #2f4667;
+    }
+
+    .toolbar-btn.format strong,
+    .toolbar-btn.format em,
+    .toolbar-btn.format u {
+      font-size: 0.86rem;
+      color: inherit;
+      pointer-events: none;
+    }
+
+    .toolbar-btn.format em { font-style: italic; }
+    .toolbar-btn.format strong { font-weight: 800; }
+    .toolbar-btn.format u { text-decoration: underline; }
+
+    .toolbar-btn.align {
+      font-size: 0.72rem;
+      min-width: 34px;
+      letter-spacing: 0.2px;
     }
 
     .stack { display: flex; flex-direction: column; gap: 8px; }
@@ -585,7 +614,7 @@
     function getDefaultBlock(type) {
       if (type === "heading") return { id: uid(), type, text: "Titulo principal", level: "h2", align: "left", color: "#0f172a", bg: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 32, bold: true } };
       if (type === "text") return { id: uid(), type, text: "Texto descriptivo del bloque.", align: "left", color: "#334155", bg: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 16 } };
-      if (type === "button") return { id: uid(), type, text: "REGISTRATE", url: "#", align: "left", bg: "#00b0db", color: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 15, bold: true } };
+      if (type === "button") return { id: uid(), type, text: "REGISTRATE", url: "#", align: "center", bg: "#00b0db", color: "#ffffff", padding: 20, containerBg: "#ffffff", borderRadius: 6, borderWidth: 0, borderColor: "#00b0db", btnPaddingV: 12, btnPaddingH: 28, fullWidth: false, typography: { ...defaultTypography(), fontSize: 15, bold: true } };
       if (type === "image") return { id: uid(), type, src: "https://placehold.co/560x220/e5eef8/385173?text=Imagen", alt: "Imagen", padding: 14, bg: "#ffffff" };
       if (type === "spacer") return { id: uid(), type, height: 22, bg: "#ffffff" };
       if (type === "divider") return { id: uid(), type, color: "#d7e2f0", thickness: 1, padding: 14, bg: "#ffffff" };
@@ -687,7 +716,14 @@
       }
 
       if (block.type === "button") {
-        return `<div style="text-align:${block.align};"><a class="mini-button" href="${block.url}" style="background:${block.bg};color:${block.color};${typographyStyle(block)};">${block.text}</a></div>`;
+        const br = block.borderRadius ?? 6;
+        const bpv = block.btnPaddingV ?? 12;
+        const bph = block.btnPaddingH ?? 28;
+        const bw = block.borderWidth ?? 0;
+        const bc = block.borderColor ?? block.bg;
+        const fw = block.fullWidth ?? false;
+        const aStyle = `background:${block.bg};color:${block.color};${typographyStyle(block)};border-radius:${br}px;padding:${bpv}px ${bph}px;border:${bw}px solid ${bc};${fw ? 'display:block;text-align:center;' : 'display:inline-block;'}text-decoration:none;`;
+        return `<div style="background:${block.containerBg ?? '#ffffff'};padding:${block.padding ?? 20}px;text-align:${block.align};"><a class="mini-button" href="${block.url}" style="${aStyle}">${block.text}</a></div>`;
       }
 
       if (block.type === "image") {
@@ -928,9 +964,44 @@
       if (b.type === "button") {
         propertiesEl.appendChild(makeField("Texto", inputText(b.text, (v) => { b.text = v; renderCanvas(); })));
         propertiesEl.appendChild(makeField("URL", inputText(b.url, (v) => { b.url = v; renderCanvas(); })));
-        propertiesEl.appendChild(makeField("Color boton", inputColor(b.bg, (v) => { b.bg = v; renderCanvas(); })));
+
+        const sep1 = document.createElement("div");
+        sep1.style.cssText = "margin:8px 0 4px;font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4a6fa5;border-top:1px solid #1e3453;padding-top:8px;";
+        sep1.textContent = "Colores";
+        propertiesEl.appendChild(sep1);
+
+        propertiesEl.appendChild(makeField("Fondo del boton", inputColor(b.bg, (v) => { b.bg = v; if (!b._borderColorManual) b.borderColor = v; renderCanvas(); })));
         propertiesEl.appendChild(makeField("Color texto", inputColor(b.color, (v) => { b.color = v; renderCanvas(); })));
-        propertiesEl.appendChild(makeField("Alineacion", inputSelect(b.align, [
+        propertiesEl.appendChild(makeField("Fondo del bloque", inputColor(b.containerBg ?? "#ffffff", (v) => { b.containerBg = v; renderCanvas(); })));
+
+        const sep2 = document.createElement("div");
+        sep2.style.cssText = "margin:8px 0 4px;font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4a6fa5;border-top:1px solid #1e3453;padding-top:8px;";
+        sep2.textContent = "Forma y tama\u00f1o";
+        propertiesEl.appendChild(sep2);
+
+        propertiesEl.appendChild(makeField("Radio de borde (px)", inputNumber(b.borderRadius ?? 6, (v) => { b.borderRadius = v; renderCanvas(); }, 0, 999)));
+        propertiesEl.appendChild(makeField("Padding vertical (px)", inputNumber(b.btnPaddingV ?? 12, (v) => { b.btnPaddingV = v; renderCanvas(); }, 2, 60)));
+        propertiesEl.appendChild(makeField("Padding horizontal (px)", inputNumber(b.btnPaddingH ?? 28, (v) => { b.btnPaddingH = v; renderCanvas(); }, 4, 120)));
+        propertiesEl.appendChild(makeField("Espacio del bloque (px)", inputNumber(b.padding ?? 20, (v) => { b.padding = v; renderCanvas(); }, 0, 80)));
+        propertiesEl.appendChild(makeField("Ancho completo", inputSelect(b.fullWidth ? "1" : "0", [
+          { value: "0", label: "Auto" },
+          { value: "1", label: "Ancho completo (100%)" }
+        ], (v) => { b.fullWidth = v === "1"; renderCanvas(); })));
+
+        const sep3 = document.createElement("div");
+        sep3.style.cssText = "margin:8px 0 4px;font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4a6fa5;border-top:1px solid #1e3453;padding-top:8px;";
+        sep3.textContent = "Borde";
+        propertiesEl.appendChild(sep3);
+
+        propertiesEl.appendChild(makeField("Ancho de borde (px)", inputNumber(b.borderWidth ?? 0, (v) => { b.borderWidth = v; renderCanvas(); }, 0, 8)));
+        propertiesEl.appendChild(makeField("Color de borde", inputColor(b.borderColor ?? b.bg, (v) => { b._borderColorManual = true; b.borderColor = v; renderCanvas(); })));
+
+        const sep4 = document.createElement("div");
+        sep4.style.cssText = "margin:8px 0 4px;font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4a6fa5;border-top:1px solid #1e3453;padding-top:8px;";
+        sep4.textContent = "Alineacion";
+        propertiesEl.appendChild(sep4);
+
+        propertiesEl.appendChild(makeField("Posicion del boton", inputSelect(b.align, [
           { value: "left", label: "Izquierda" },
           { value: "center", label: "Centro" },
           { value: "right", label: "Derecha" }
@@ -1088,7 +1159,16 @@
           return `<tr><td style="padding:${b.padding}px;background:${b.bg};color:${b.color};text-align:${b.align};line-height:1.5;${typographyStyle(b)};">${escapeHtml(b.text)}</td></tr>`;
         }
         if (b.type === "button") {
-          return `<tr><td style="padding:${b.padding}px;background:${b.bg};text-align:${b.align};"><a href="${escapeHtml(b.url)}" style="display:inline-block;padding:12px 22px;background:${b.bg};color:${b.color};text-decoration:none;border-radius:6px;${typographyStyle(b)};">${escapeHtml(b.text)}</a></td></tr>`;
+          const br = b.borderRadius ?? 6;
+          const bpv = b.btnPaddingV ?? 12;
+          const bph = b.btnPaddingH ?? 28;
+          const bw = b.borderWidth ?? 0;
+          const bc = b.borderColor ?? b.bg;
+          const fw = b.fullWidth ?? false;
+          const containerBg = b.containerBg ?? "#ffffff";
+          const bBorder = bw > 0 ? `border:${bw}px solid ${bc};mso-border-alt:solid ${bc} ${bw}px;` : "border:0;";
+          const aStyle = `${fw ? 'display:block;' : 'display:inline-block;'}padding:${bpv}px ${bph}px;background:${b.bg};color:${b.color};text-decoration:none;border-radius:${br}px;${bBorder}${typographyStyle(b)};`;
+          return `<tr><td style="padding:${b.padding ?? 20}px;background:${containerBg};text-align:${b.align};"><a href="${escapeHtml(b.url)}" style="${aStyle}">${escapeHtml(b.text)}</a></td></tr>`;
         }
         if (b.type === "image") {
           return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><img src="${escapeHtml(b.src)}" alt="${escapeHtml(b.alt)}" style="display:block;width:100%;max-width:100%;height:auto;border-radius:8px;" /></td></tr>`;
