@@ -28,7 +28,8 @@
       min-height: 100vh;
       display: grid;
       grid-template-rows: 56px 1fr;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .topbar {
@@ -84,6 +85,7 @@
     .layout {
       display: grid;
       grid-template-columns: 300px 1fr 340px;
+      height: calc(100vh - 56px);
       min-height: 0;
     }
 
@@ -92,6 +94,7 @@
       background: rgba(15, 23, 38, 0.9);
       min-height: 0;
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 12px;
     }
 
@@ -156,6 +159,7 @@
     .canvas-wrap {
       min-height: 0;
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 18px;
       display: flex;
       justify-content: center;
