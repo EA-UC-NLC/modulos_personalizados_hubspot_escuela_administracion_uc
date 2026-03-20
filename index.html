@@ -1,601 +1,356 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulos de Email HubSpot - Escuela de Administración UC</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulos HubSpot — Escuela de Administración UC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            padding: 60px 20px;
-            color: #1f2937;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    nav {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav .logo { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    nav .logo span { color: #00b0db; }
+    nav .badge {
+      background: #00b0db22;
+      color: #00b0db;
+      border: 1px solid #00b0db44;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    nav .count { margin-left: auto; color: #8b949e; font-size: 0.85rem; }
 
-        header {
-            text-align: center;
-            margin-bottom: 70px;
-            animation: fadeInDown 0.8s ease;
-        }
+    .hero {
+      text-align: center;
+      padding: 70px 20px 60px;
+      border-bottom: 1px solid #21262d;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, #00b0db, #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p { color: #8b949e; font-size: 1.05rem; line-height: 1.7; max-width: 600px; margin: 0 auto; }
 
-        h1 {
-            color: #ffffff;
-            font-size: 3rem;
-            margin-bottom: 15px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
+    .category { max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .category-header { display: flex; align-items: center; gap: 12px; padding: 50px 0 24px; }
+    .category-header h2 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .category-header .icon { font-size: 1.6rem; }
+    .category-line {
+      height: 2px;
+      background: linear-gradient(90deg, #00b0db55 0%, #ffd70033 60%, transparent 100%);
+      margin-bottom: 30px;
+    }
 
-        .subtitle {
-            color: #00b0db;
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
 
-        .description {
-            color: #cbd5e1;
-            font-size: 1.05rem;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: #00b0db55;
+      box-shadow: 0 20px 50px rgba(0,176,219,0.15);
+    }
 
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 35px;
-            margin-top: 50px;
-        }
+    .preview-wrap {
+      background: #f8fafc;
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid #21262d;
+      cursor: pointer;
+    }
+    .preview-wrap iframe {
+      width: 600px;
+      height: 500px;
+      border: none;
+      transform: scale(0.52);
+      transform-origin: top left;
+      pointer-events: none;
+    }
+    .preview-overlay { position: absolute; inset: 0; }
 
-        .module-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeInUp 0.7s ease;
-            border: 1px solid rgba(0, 176, 219, 0.1);
-        }
+    .card-info { padding: 20px 20px 0; }
+    .card-type {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #00b0db;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .card-info h3 { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .card-info p { font-size: 0.87rem; color: #8b949e; line-height: 1.55; margin-bottom: 14px; }
 
-        .module-card:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 30px 80px rgba(0, 176, 219, 0.25);
-            border-color: rgba(0, 176, 219, 0.3);
-        }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tag {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #9ca3af;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.76rem;
+      font-weight: 500;
+    }
 
-        .module-preview {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            padding: 20px;
-            border-bottom: 2px solid rgba(0, 176, 219, 0.1);
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: auto;
-            position: relative;
-        }
+    .card-actions { padding: 0 20px 20px; display: flex; gap: 10px; margin-top: auto; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.87rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #00b0db; color: #fff; flex: 1; }
+    .btn-primary:hover { background: #0095bc; }
+    .btn-outline { background: transparent; color: #8b949e; border: 1px solid #30363d; }
+    .btn-outline:hover { border-color: #00b0db66; color: #00b0db; }
 
-        .module-preview img {
-            max-width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-
-        .preview-placeholder {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-
-        .module-header {
-            background: linear-gradient(135deg, #00b0db 0%, #0086a8 100%);
-            color: white;
-            padding: 24px 20px;
-            text-align: left;
-        }
-
-        .module-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .module-type {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        .module-content {
-            padding: 24px 20px;
-        }
-
-        .module-description {
-            color: #475569;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 18px;
-        }
-
-        .module-features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .feature-tag {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
-            color: #0086c4;
-            padding: 6px 14px;
-            border-radius: 24px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border: 1px solid rgba(0, 176, 219, 0.2);
-        }
-
-        .module-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .cta-button {
-            flex: 1;
-            background: #00b0db;
-            color: white;
-            padding: 12px 16px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid #00b0db;
-            text-align: center;
-            font-size: 0.95rem;
-        }
-
-        .cta-button:hover {
-            background: #0093b3;
-            border-color: #0093b3;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 176, 219, 0.3);
-        }
-
-        .cta-secondary {
-            background: transparent;
-            color: #00b0db;
-            border: 2px solid #e0f2fe;
-        }
-
-        .cta-secondary:hover {
-            background: #f0f7ff;
-            border-color: #00b0db;
-        }
-
-        .category-section {
-            margin-bottom: 80px;
-        }
-
-        .category-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 60px 0 30px 0;
-            color: #ffffff;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .category-icon {
-            font-size: 2.5rem;
-        }
-
-        .category-divider {
-            height: 4px;
-            background: linear-gradient(90deg, #00b0db 0%, #ffd700 50%, #00b0db 100%);
-            margin-bottom: 40px;
-            border-radius: 2px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 100px;
-            padding-top: 50px;
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-
-        .back-to-top {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 10px 20px;
-            background: #ffd700;
-            color: #03122E;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            transition: all 0.3s ease;
-        }
-
-        .back-to-top:hover {
-            background: #ffed4e;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.2rem;
-            }
-
-            .modules-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .category-title {
-                font-size: 1.6rem;
-            }
-
-            .module-actions {
-                flex-direction: column;
-            }
-
-            .cta-button {
-                width: 100%;
-            }
-        }
-    </style>
+    footer {
+      text-align: center;
+      padding: 50px 20px 0;
+      color: #484f58;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>📧 Módulos de Email HubSpot</h1>
-            <p class="subtitle">Escuela de Administración - Universidad Católica de Chile</p>
-            <p class="description">
-                Colección de componentes HTML reutilizables diseñados para campañas de email marketing en HubSpot. 
-                Todos los módulos son responsive, compatibles con clientes de email y faciles de personalizar.
-            </p>
-        </header>
 
-        <!-- Heroes Section -->
-        <section class="category-section">
-            <div class="category-title">
-                <span class="category-icon">🎯</span>
-                <span>Héroes / Banners</span>
-            </div>
-            <div class="category-divider"></div>
-            <div class="modules-grid">
-                <!-- Hero Evento -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Hero Evento</h2>
-                        <p class="module-type">Banner con Información de Evento</p>
-                    </div>
-                    <div class="module-preview">
-                        <div class="preview-placeholder">📅 Vista previa del módulo Hero Evento</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Héroe personalizable para promocionar eventos con fecha, hora y ubicación. Incluye 3 cajas de información y CTA.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">Gradiente</span>
-                            <span class="feature-tag">3 Boxes</span>
-                            <span class="feature-tag">CTA</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/hero_evento/hero_evento.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/hero_evento/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </div>
-                    </div>
-                </div>
+  <nav>
+    <div class="logo">&#128247; HubSpot Modules <span>EA-UC</span></div>
+    <span class="badge">v2.0</span>
+    <span class="count">8 módulos</span>
+  </nav>
 
-                <!-- Hero Diplomado -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Hero Diplomado</h2>
-                        <p class="module-type">Banner 50/50 para Programas</p>
-                    </div>
-                    <div class="module-preview">
-                        <div class="preview-placeholder">🎓 Vista previa del módulo Hero Diplomado</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Layout 50/50 perfecto para promocionar programas, diplomados y cursos. Imagen + contenido balanceado.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">2 Columnas</span>
-                            <span class="feature-tag">Flexible</span>
-                            <span class="feature-tag">CTA</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/hero_diplomado/hero_diplomado.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/hero_diplomado/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </div>
-                    </div>
-                </div>
+  <div class="hero">
+    <h1>Biblioteca de <em>Módulos de Email</em></h1>
+    <p>Componentes HTML reutilizables listos para HubSpot. Haz clic en cualquier módulo para previsualizarlo en desktop y mobile, y descargar el código.</p>
+  </div>
 
-                <!-- Hero Destacado -->
-                <div class="module-cardpreview">
-                        <div class="preview-placeholder">⚡ Vista previa del módulo Hero Destacado</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Héroe con contadores en tiempo real para cupo disponible y días restantes. Crea urgencia de inscripción.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">Contadores</span>
-                            <span class="feature-tag">Urgencia</span>
-                            <span class="feature-tag">Dinámico</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/hero_destacado/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </divhref="/modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/hero_destacado/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <div class="category">
 
-        <!-- Cards Section -->
-        <section class="category-section">
-            <div class="category-title">
-                <span class="category-icon">🎨</span>
-                <span>Tarjetas / Grillas</span>
-            </div>
-            <div class="category-divider"></div>
-            <div class="modules-grid">
-                <!-- Cards 4 Col -->
-                <div class="module-cardpreview">
-                        <div class="preview-placeholder">🎨 Vista previa del módulo Cards 4 Columnas</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Grilla de 4 tarjetas con ícono, título y descripción. Ideal para beneficios, características o servicios.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">4 Columnas</span>
-                            <span class="feature-tag">Iconos</span>
-                            <span class="feature-tag">Responsive</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/cards_4col/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </divhref="/modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/cards_4col/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>preview">
-                        <div class="preview-placeholder">👥 Vista previa del módulo Cards 2x2</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Grilla 2x2 para speaker, testimonios o destacados. Incluye avatar, nombre y descripción por persona.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">Grilla 2x2</span>
-                            <span class="feature-tag">Avatar</span>
-                            <span class="feature-tag">Flexible</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/cards_grid_2x2/cards_grid_2x2.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/cards_grid_2x2/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </divv class="module-features">
-                            <span class="feature-tag">Grilla 2x2</span>
-                            <span class="feature-tag">Avatar</span>
-                            <span class="feature-tag">Flexible</span>
-                        </div>
-                        <a href="/modulos/cards_grid_2x2/cards_grid_2x2.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/cards_grid_2x2/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <!-- HEROES -->
+    <div class="category-header"><span class="icon">&#127919;</span><h2>Héroes / Banners</h2></div>
+    <div class="category-line"></div>
+    <div class="grid">
 
-        <!-- Lists Section -->
-        <section class="category-section">
-            <div class="category-title">
-                <span class="category-icon">📋</span>
-                <span>Listados / Eventopreview">
-                        <div class="preview-placeholder">⏰ Vista previa del módulo Event List</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            Listado vertical de eventos con hora, duración y descripción. Perfecto para agendas y programas de eventos.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">Vertical</span>
-                            <span class="feature-tag">Hora/Duración</span>
-                            <span class="feature-tag">Separadores</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/event_list_program/event_list_program.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/event_list_program/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </divv class="module-features">
-                            <span class="feature-tag">Vertical</span>
-                            <span class="feature-tag">Hora/Duración</span>
-                            <span class="feature-tag">Separadores</span>
-                        </div>
-                        <a href="/modulos/event_list_program/event_list_program.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/event_list_program/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-preview">
-                        <div class="preview-placeholder">🔘 Vista previa del módulo CTA Buttons</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            4 variantes de botones CTA: primario azul, secundario dorado, terciario blanco y alternativo. Altamente customizable.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">4 Estilos</span>
-                            <span class="feature-tag">Sombras</span>
-                            <span class="feature-tag">Hover</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/cta_buttons/cta_multiple.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/cta_buttons/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </div
-                    <div class="module-content">
-                        <p class="module-description">
-                            4 variantes de botones CTA: primario azul, secundario dorado, terciario blanco y alternativo. Altamente customizable.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">4 Estilos</span>
-                            <span class="feature-tag">Sombras</span>
-                            <span class="feature-tag">Hover</span>
-                        </div>
-                        <a href="/modulos/cta_buttons/cta_multiple.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/cta_buttons/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-preview">
-                        <div class="preview-placeholder">✨ Vista previa del módulo Dividers & Headers</div>
-                    </div>
-                    <div class="module-content">
-                        <p class="module-description">
-                            7 opciones de separadores y headers: lineal simple, con icono, azul, dorado, oscuro, gradiente y doble línea.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">7 Estilos</span>
-                            <span class="feature-tag">Gradientes</span>
-                            <span class="feature-tag">Headers</span>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/modulos/dividers_headers/divider_header.html" class="cta-button" target="_blank">
-                                👁️ Ver
-                            </a>
-                            <a href="/modulos/dividers_headers/README.md" class="cta-button cta-secondary" target="_blank">
-                                📖 Docs
-                            </a>
-                        </div
-                    <div class="module-content">
-                        <p class="module-description">
-                            7 opciones de separadores y headers: lineal simple, con icono, azul, dorado, oscuro, gradiente y doble línea.
-                        </p>
-                        <div class="module-features">
-                            <span class="feature-tag">7 Estilos</span>
-                            <span class="feature-tag">Gradientes</span>
-                            <span class="feature-tag">Headers</span>
-                        </div>
-                        <a href="/modulos/dividers_headers/divider_header.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/dividers_headers/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=hero_evento&f=/modulos/hero_evento/hero_evento.html'">
+          <iframe src="/modulos/hero_evento/hero_evento.html" loading="lazy" title="Hero Evento"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Banner</div>
+          <h3>Hero Evento</h3>
+          <p>Banner para eventos con fecha, hora y lugar. Incluye 3 info-boxes y botón CTA.</p>
+          <div class="tags"><span class="tag">Gradiente</span><span class="tag">3 Boxes</span><span class="tag">CTA</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=hero_evento&f=/modulos/hero_evento/hero_evento.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/hero_evento/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
 
-        <!-- Footer -->
-        <footer>
-            <p>
-                <strong>Módulos de Email HubSpot</strong> | Escuela de Administración UC<br>
-                Todos los módulos son HTML puro, inline CSS compatible con HubSpot | Última actualización: 20 de Marzo, 2026
-            </p>
-            <a href="#" class="back-to-top">↑ Volver al inicio</a>
-        </footer>
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=hero_diplomado&f=/modulos/hero_diplomado/hero_diplomado.html'">
+          <iframe src="/modulos/hero_diplomado/hero_diplomado.html" loading="lazy" title="Hero Diplomado"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Banner</div>
+          <h3>Hero Diplomado</h3>
+          <p>Layout 50/50 para promocionar programas y diplomados. Imagen + contenido balanceado.</p>
+          <div class="tags"><span class="tag">2 Columnas</span><span class="tag">Flexible</span><span class="tag">CTA</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=hero_diplomado&f=/modulos/hero_diplomado/hero_diplomado.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/hero_diplomado/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=hero_destacado&f=/modulos/hero_destacado/hero_destacado.html'">
+          <iframe src="/modulos/hero_destacado/hero_destacado.html" loading="lazy" title="Hero Destacado"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Banner</div>
+          <h3>Hero Destacado</h3>
+          <p>Banner con contadores de cupo y días restantes. Crea urgencia de inscripción.</p>
+          <div class="tags"><span class="tag">Contadores</span><span class="tag">Urgencia</span><span class="tag">Dinámico</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=hero_destacado&f=/modulos/hero_destacado/hero_destacado.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/hero_destacado/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
     </div>
 
-    <script>
-        // Smooth scroll para back-to-top
-        document.querySelectorAll('a[href="#"]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        });
-    </script>
+    <!-- TARJETAS -->
+    <div class="category-header"><span class="icon">&#127912;</span><h2>Tarjetas / Grillas</h2></div>
+    <div class="category-line"></div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=cards_4col&f=/modulos/cards_4col/cards_4col.html'">
+          <iframe src="/modulos/cards_4col/cards_4col.html" loading="lazy" title="Cards 4 col"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Tarjetas</div>
+          <h3>Cards 4 Columnas</h3>
+          <p>Grilla de 4 tarjetas con ícono, título y descripción. Ideal para beneficios o características.</p>
+          <div class="tags"><span class="tag">4 Col</span><span class="tag">Iconos</span><span class="tag">Responsive</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=cards_4col&f=/modulos/cards_4col/cards_4col.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/cards_4col/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=cards_grid_2x2&f=/modulos/cards_grid_2x2/cards_grid_2x2.html'">
+          <iframe src="/modulos/cards_grid_2x2/cards_grid_2x2.html" loading="lazy" title="Cards 2x2"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Tarjetas</div>
+          <h3>Cards Grid 2x2</h3>
+          <p>Grilla 2x2 para speakers, testimonios o destacados. Con avatar, nombre y descripción.</p>
+          <div class="tags"><span class="tag">2x2</span><span class="tag">Avatar</span><span class="tag">Flexible</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=cards_grid_2x2&f=/modulos/cards_grid_2x2/cards_grid_2x2.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/cards_grid_2x2/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LISTADOS -->
+    <div class="category-header"><span class="icon">&#128203;</span><h2>Listados / Eventos</h2></div>
+    <div class="category-line"></div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=event_list_program&f=/modulos/event_list_program/event_list_program.html'">
+          <iframe src="/modulos/event_list_program/event_list_program.html" loading="lazy" title="Event List"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Listado</div>
+          <h3>Event List / Agenda</h3>
+          <p>Listado vertical de eventos con hora, duración y descripción. Perfecto para programas y agendas.</p>
+          <div class="tags"><span class="tag">Vertical</span><span class="tag">Hora/Duración</span><span class="tag">Separadores</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=event_list_program&f=/modulos/event_list_program/event_list_program.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/event_list_program/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="category-header"><span class="icon">&#128280;</span><h2>Llamadas a Acción</h2></div>
+    <div class="category-line"></div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=cta_buttons&f=/modulos/cta_buttons/cta_multiple.html'">
+          <iframe src="/modulos/cta_buttons/cta_multiple.html" loading="lazy" title="CTA Buttons"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">CTA</div>
+          <h3>CTA Buttons</h3>
+          <p>4 estilos de botones: primario azul, dorado, con borde y alternativo morado.</p>
+          <div class="tags"><span class="tag">4 Estilos</span><span class="tag">Sombras</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=cta_buttons&f=/modulos/cta_buttons/cta_multiple.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/cta_buttons/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DIVISORES -->
+    <div class="category-header"><span class="icon">&#10024;</span><h2>Divisores / Headers</h2></div>
+    <div class="category-line"></div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="preview-wrap" onclick="location.href='/viewer.html?m=dividers_headers&f=/modulos/dividers_headers/divider_header.html'">
+          <iframe src="/modulos/dividers_headers/divider_header.html" loading="lazy" title="Dividers"></iframe>
+          <div class="preview-overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-type">Separadores</div>
+          <h3>Dividers &amp; Headers</h3>
+          <p>7 variantes de separadores y headers: azul, dorado, oscuro, gradiente y doble línea.</p>
+          <div class="tags"><span class="tag">7 Estilos</span><span class="tag">Gradientes</span><span class="tag">Headers</span></div>
+        </div>
+        <div class="card-actions">
+          <a href="/viewer.html?m=dividers_headers&f=/modulos/dividers_headers/divider_header.html" class="btn btn-primary">&#128065;&#65039; Abrir visor</a>
+          <a href="/modulos/dividers_headers/README.md" class="btn btn-outline" target="_blank">&#128214;</a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Módulos de Email HubSpot &middot; Escuela de Administración UC &middot; Actualizado marzo 2026</p>
+  </footer>
+
 </body>
 </html>

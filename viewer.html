@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visor de Módulo — HubSpot EA-UC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { color: #00b0db; border-color: #00b0db55; background: #00b0db11; }
+
+    .module-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      margin-right: auto;
+    }
+    .module-name span { color: #00b0db; }
+
+    /* ─── VIEW TOGGLE ─── */
+    .toggle-group {
+      display: flex;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .toggle-btn {
+      padding: 7px 16px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: #8b949e;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .toggle-btn:hover { color: #e6edf3; }
+    .toggle-btn.active { background: #00b0db; color: #fff; }
+
+    /* ─── ACTION BUTTONS ─── */
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-copy {
+      background: #1f2937;
+      color: #e6edf3;
+      border: 1px solid #374151;
+    }
+    .btn-copy:hover { background: #374151; }
+    .btn-copy.copied { background: #166534; color: #bbf7d0; border-color: #166534; }
+
+    .btn-download {
+      background: #00b0db;
+      color: #fff;
+    }
+    .btn-download:hover { background: #0095bc; }
+
+    /* ─── VIEWPORT AREA ─── */
+    .viewport-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #090c10;
+      overflow: hidden;
+      padding: 20px;
+      gap: 12px;
+    }
+
+    .viewport-label {
+      font-size: 0.78rem;
+      color: #484f58;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .iframe-container {
+      flex: 1;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #30363d, 0 20px 60px rgba(0,0,0,0.5);
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 620px;
+      max-width: 100%;
+      display: flex;
+    }
+    .iframe-container.mobile { width: 390px; }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #166534;
+      color: #bbf7d0;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="/" class="back-btn">&#8592; Galería</a>
+    <div class="module-name" id="moduleName">Cargando...</div>
+
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btnDesktop" onclick="setView('desktop')">
+        &#128438; Desktop
+      </button>
+      <button class="toggle-btn" id="btnMobile" onclick="setView('mobile')">
+        &#128241; Mobile
+      </button>
+    </div>
+
+    <button class="action-btn btn-copy" id="copyBtn" onclick="copyHTML()">
+      &#128203; Copiar HTML
+    </button>
+    <button class="action-btn btn-download" id="downloadBtn" onclick="downloadHTML()">
+      &#11015;&#65039; Descargar
+    </button>
+  </div>
+
+  <div class="viewport-area">
+    <div class="viewport-label" id="viewportLabel">Desktop — 600px</div>
+    <div class="iframe-container" id="iframeContainer">
+      <iframe id="moduleFrame" title="Vista del módulo"></iframe>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">&#10003; HTML copiado al portapapeles</div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const moduleName = params.get('m') || 'modulo';
+    const filePath   = params.get('f') || '';
+
+    // Set title
+    document.getElementById('moduleName').innerHTML =
+      '<span>' + moduleName.replace(/_/g, ' ') + '</span>';
+    document.title = moduleName.replace(/_/g, ' ') + ' — Visor HubSpot EA-UC';
+
+    // Load iframe
+    if (filePath) {
+      document.getElementById('moduleFrame').src = filePath;
+    }
+
+    // ─── TOGGLE VIEW ───
+    function setView(mode) {
+      const container = document.getElementById('iframeContainer');
+      const label     = document.getElementById('viewportLabel');
+      const btnD      = document.getElementById('btnDesktop');
+      const btnM      = document.getElementById('btnMobile');
+
+      if (mode === 'mobile') {
+        container.classList.add('mobile');
+        label.textContent = 'Mobile — 390px';
+        btnM.classList.add('active');
+        btnD.classList.remove('active');
+      } else {
+        container.classList.remove('mobile');
+        label.textContent = 'Desktop — 600px';
+        btnD.classList.add('active');
+        btnM.classList.remove('active');
+      }
+    }
+
+    // ─── COPY HTML ───
+    async function copyHTML() {
+      if (!filePath) return;
+      try {
+        const res  = await fetch(filePath);
+        const html = await res.text();
+        await navigator.clipboard.writeText(html);
+
+        const btn = document.getElementById('copyBtn');
+        btn.classList.add('copied');
+        btn.textContent = '✓ Copiado';
+        showToast();
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '&#128203; Copiar HTML';
+        }, 2500);
+      } catch (e) {
+        alert('No se pudo copiar. Intenta desde Chrome o Edge.');
+      }
+    }
+
+    // ─── DOWNLOAD HTML ───
+    async function downloadHTML() {
+      if (!filePath) return;
+      try {
+        const res      = await fetch(filePath);
+        const html     = await res.text();
+        const blob     = new Blob([html], { type: 'text/html' });
+        const url      = URL.createObjectURL(blob);
+        const filename = filePath.split('/').pop();
+        const a        = document.createElement('a');
+        a.href         = url;
+        a.download     = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('No se pudo descargar el archivo.');
+      }
+    }
+
+    // ─── TOAST ───
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+  </script>
+
+</body>
+</html>
