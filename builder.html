@@ -292,6 +292,31 @@
       gap: 8px;
     }
 
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .toolbar-btn {
+      border: 1px solid #3c506f;
+      background: #162238;
+      color: #d9e7fb;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 34px;
+    }
+
+    .toolbar-btn.active {
+      background: #00b0db;
+      border-color: #00b0db;
+      color: #fff;
+    }
+
     .stack { display: flex; flex-direction: column; gap: 8px; }
 
     .helper {
@@ -349,6 +374,77 @@
 
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 10, 18, 0.82);
+      backdrop-filter: blur(3px);
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .preview-modal.show {
+      display: flex;
+    }
+
+    .preview-dialog {
+      width: min(980px, 100%);
+      height: min(90vh, 760px);
+      background: #10192b;
+      border: 1px solid #314766;
+      border-radius: 12px;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55);
+      display: grid;
+      grid-template-rows: 52px 1fr;
+      overflow: hidden;
+    }
+
+    .preview-dialog-head {
+      border-bottom: 1px solid #2d4160;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      color: #cdddf7;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .preview-dialog-body {
+      padding: 12px;
+      background: #0d1523;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .full-preview-frame {
+      width: 620px;
+      max-width: 100%;
+      min-height: 500px;
+      border: 1px solid #2d4160;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+      transition: width .2s ease;
+    }
+
+    .full-preview-frame.mobile {
+      width: 380px;
+    }
+
+    .full-preview-frame iframe {
+      width: 100%;
+      height: 72vh;
+      border: none;
+      display: block;
+      background: #fff;
+    }
+
     @media (max-width: 1280px) {
       .layout { grid-template-columns: 260px 1fr 320px; }
     }
@@ -372,6 +468,7 @@
 
     <button class="btn" id="viewDesktopBtn">Desktop</button>
     <button class="btn" id="viewMobileBtn">Mobile</button>
+    <button class="btn" id="generalPreviewBtn">Vista general</button>
     <button class="btn" id="clearBtn">Limpiar</button>
     <button class="btn" id="copyBtn">Copiar HTML</button>
     <button class="btn primary" id="downloadBtn">Descargar HTML</button>
@@ -406,6 +503,23 @@
     </aside>
   </main>
 
+  <div class="preview-modal" id="previewModal">
+    <div class="preview-dialog">
+      <div class="preview-dialog-head">
+        <span>Visualizacion general del correo completo</span>
+        <span style="margin-left:auto"></span>
+        <button class="btn" id="previewDesktopBtn">Desktop</button>
+        <button class="btn" id="previewMobileBtn">Mobile</button>
+        <button class="btn danger" id="closePreviewBtn">Cerrar</button>
+      </div>
+      <div class="preview-dialog-body">
+        <div class="full-preview-frame" id="fullPreviewFrameWrap">
+          <iframe id="fullPreviewFrame" title="Preview general"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -430,19 +544,52 @@
     const baseToolsEl = document.getElementById("baseTools");
     const customToolsEl = document.getElementById("customTools");
     const emailFrame = document.getElementById("emailFrame");
+    const previewModal = document.getElementById("previewModal");
+    const fullPreviewFrame = document.getElementById("fullPreviewFrame");
+    const fullPreviewFrameWrap = document.getElementById("fullPreviewFrameWrap");
+
+    function defaultTypography() {
+      return {
+        fontFamily: "Arial, sans-serif",
+        fontSize: 16,
+        bold: false,
+        italic: false,
+        underline: false
+      };
+    }
+
+    function ensureTypography(block) {
+      if (!block.typography) block.typography = defaultTypography();
+      if (!block.typography.fontFamily) block.typography.fontFamily = "Arial, sans-serif";
+      if (!block.typography.fontSize) block.typography.fontSize = 16;
+      block.typography.bold = !!block.typography.bold;
+      block.typography.italic = !!block.typography.italic;
+      block.typography.underline = !!block.typography.underline;
+    }
+
+    function typographyStyle(block) {
+      ensureTypography(block);
+      return [
+        `font-family:${block.typography.fontFamily}`,
+        `font-size:${block.typography.fontSize}px`,
+        `font-weight:${block.typography.bold ? "700" : "400"}`,
+        `font-style:${block.typography.italic ? "italic" : "normal"}`,
+        `text-decoration:${block.typography.underline ? "underline" : "none"}`
+      ].join(";");
+    }
 
     function uid() {
       return "b_" + Math.random().toString(36).slice(2, 9);
     }
 
     function getDefaultBlock(type) {
-      if (type === "heading") return { id: uid(), type, text: "Titulo principal", level: "h2", align: "left", color: "#0f172a", bg: "#ffffff", padding: 14 };
-      if (type === "text") return { id: uid(), type, text: "Texto descriptivo del bloque.", align: "left", color: "#334155", bg: "#ffffff", padding: 14 };
-      if (type === "button") return { id: uid(), type, text: "REGISTRATE", url: "#", align: "left", bg: "#00b0db", color: "#ffffff", padding: 14 };
+      if (type === "heading") return { id: uid(), type, text: "Titulo principal", level: "h2", align: "left", color: "#0f172a", bg: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 32, bold: true } };
+      if (type === "text") return { id: uid(), type, text: "Texto descriptivo del bloque.", align: "left", color: "#334155", bg: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 16 } };
+      if (type === "button") return { id: uid(), type, text: "REGISTRATE", url: "#", align: "left", bg: "#00b0db", color: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 15, bold: true } };
       if (type === "image") return { id: uid(), type, src: "https://placehold.co/560x220/e5eef8/385173?text=Imagen", alt: "Imagen", padding: 14, bg: "#ffffff" };
       if (type === "spacer") return { id: uid(), type, height: 22, bg: "#ffffff" };
       if (type === "divider") return { id: uid(), type, color: "#d7e2f0", thickness: 1, padding: 14, bg: "#ffffff" };
-      if (type === "twoCol") return { id: uid(), type, left: "Columna A", right: "Columna B", gap: 10, bg: "#ffffff", padding: 14 };
+      if (type === "twoCol") return { id: uid(), type, left: "Columna A", right: "Columna B", gap: 10, bg: "#ffffff", padding: 14, typography: { ...defaultTypography(), fontSize: 14 } };
       if (type === "customHtml") return { id: uid(), type, html: "<div style='padding:12px;border:1px dashed #9ab0ce;border-radius:8px;'>Bloque HTML libre</div>", bg: "#ffffff", padding: 14 };
       return { id: uid(), type: "text", text: "Nuevo bloque" };
     }
@@ -532,15 +679,15 @@
     function renderBlockContent(block) {
       if (block.type === "heading") {
         const tag = block.level || "h2";
-        return `<${tag} style="margin:0;color:${block.color};text-align:${block.align};">${block.text}</${tag}>`;
+        return `<${tag} style="margin:0;color:${block.color};text-align:${block.align};${typographyStyle(block)};">${block.text}</${tag}>`;
       }
 
       if (block.type === "text") {
-        return `<p style="margin:0;color:${block.color};text-align:${block.align};line-height:1.5;">${block.text}</p>`;
+        return `<p style="margin:0;color:${block.color};text-align:${block.align};line-height:1.5;${typographyStyle(block)};">${block.text}</p>`;
       }
 
       if (block.type === "button") {
-        return `<div style="text-align:${block.align};"><a class="mini-button" href="${block.url}" style="background:${block.bg};color:${block.color};">${block.text}</a></div>`;
+        return `<div style="text-align:${block.align};"><a class="mini-button" href="${block.url}" style="background:${block.bg};color:${block.color};${typographyStyle(block)};">${block.text}</a></div>`;
       }
 
       if (block.type === "image") {
@@ -556,7 +703,7 @@
       }
 
       if (block.type === "twoCol") {
-        return `<div class="two-col" style="gap:${block.gap}px;"><div>${block.left}</div><div>${block.right}</div></div>`;
+        return `<div class="two-col" style="gap:${block.gap}px;"><div style="${typographyStyle(block)};">${block.left}</div><div style="${typographyStyle(block)};">${block.right}</div></div>`;
       }
 
       if (block.type === "customHtml" || block.type === "userTemplate") {
@@ -668,6 +815,60 @@
       return s;
     }
 
+    function createTypographyToolbar(block) {
+      ensureTypography(block);
+      const wrap = document.createElement("div");
+
+      const row1 = document.createElement("div");
+      row1.className = "toolbar-row";
+
+      const family = inputSelect(block.typography.fontFamily, [
+        { value: "Arial, sans-serif", label: "Arial" },
+        { value: "Tahoma, sans-serif", label: "Tahoma" },
+        { value: "Verdana, sans-serif", label: "Verdana" },
+        { value: "Georgia, serif", label: "Georgia" },
+        { value: "'Times New Roman', serif", label: "Times" },
+        { value: "'Trebuchet MS', sans-serif", label: "Trebuchet" }
+      ], (v) => { block.typography.fontFamily = v; renderCanvas(); });
+      family.style.minWidth = "130px";
+      family.style.maxWidth = "170px";
+
+      const size = inputNumber(block.typography.fontSize, (v) => {
+        block.typography.fontSize = Math.max(10, Math.min(72, v || 16));
+        renderCanvas();
+      }, 10, 72);
+      size.style.width = "80px";
+
+      row1.appendChild(family);
+      row1.appendChild(size);
+
+      const row2 = document.createElement("div");
+      row2.className = "toolbar-row";
+
+      function toggleBtn(label, active, onClick) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "toolbar-btn" + (active ? " active" : "");
+        b.textContent = label;
+        b.onclick = onClick;
+        return b;
+      }
+
+      row2.appendChild(toggleBtn("B", !!block.typography.bold, () => { block.typography.bold = !block.typography.bold; renderProperties(); renderCanvas(); }));
+      row2.appendChild(toggleBtn("I", !!block.typography.italic, () => { block.typography.italic = !block.typography.italic; renderProperties(); renderCanvas(); }));
+      row2.appendChild(toggleBtn("U", !!block.typography.underline, () => { block.typography.underline = !block.typography.underline; renderProperties(); renderCanvas(); }));
+
+      if (block.align) {
+        row2.appendChild(toggleBtn("L", block.align === "left", () => { block.align = "left"; renderProperties(); renderCanvas(); }));
+        row2.appendChild(toggleBtn("C", block.align === "center", () => { block.align = "center"; renderProperties(); renderCanvas(); }));
+        row2.appendChild(toggleBtn("R", block.align === "right", () => { block.align = "right"; renderProperties(); renderCanvas(); }));
+      }
+
+      wrap.appendChild(row1);
+      wrap.appendChild(row2);
+      return wrap;
+    }
+
     function renderProperties() {
       propertiesEl.innerHTML = "";
       const b = getSelectedBlock();
@@ -688,6 +889,16 @@
       // Generic
       propertiesEl.appendChild(makeField("Padding", inputNumber(b.padding || 0, (v) => { b.padding = v; renderCanvas(); })));
       propertiesEl.appendChild(makeField("Fondo", inputColor(b.bg || "#ffffff", (v) => { b.bg = v; renderCanvas(); })));
+
+      if (["heading", "text", "button", "twoCol"].includes(b.type)) {
+        const typoWrap = document.createElement("div");
+        typoWrap.className = "field";
+        const typoLabel = document.createElement("label");
+        typoLabel.textContent = "Barra de texto";
+        typoWrap.appendChild(typoLabel);
+        typoWrap.appendChild(createTypographyToolbar(b));
+        propertiesEl.appendChild(typoWrap);
+      }
 
       if (b.type === "heading") {
         propertiesEl.appendChild(makeField("Texto", inputText(b.text, (v) => { b.text = v; renderCanvas(); })));
@@ -871,13 +1082,13 @@
       const chunks = blocks.map((b) => {
         if (b.type === "heading") {
           const tag = b.level || "h2";
-          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><${tag} style="margin:0;color:${b.color};text-align:${b.align};font-family:Arial,sans-serif;">${escapeHtml(b.text)}</${tag}></td></tr>`;
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><${tag} style="margin:0;color:${b.color};text-align:${b.align};${typographyStyle(b)};">${escapeHtml(b.text)}</${tag}></td></tr>`;
         }
         if (b.type === "text") {
-          return `<tr><td style="padding:${b.padding}px;background:${b.bg};font-family:Arial,sans-serif;color:${b.color};text-align:${b.align};line-height:1.5;">${escapeHtml(b.text)}</td></tr>`;
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};color:${b.color};text-align:${b.align};line-height:1.5;${typographyStyle(b)};">${escapeHtml(b.text)}</td></tr>`;
         }
         if (b.type === "button") {
-          return `<tr><td style="padding:${b.padding}px;background:${b.bg};text-align:${b.align};font-family:Arial,sans-serif;"><a href="${escapeHtml(b.url)}" style="display:inline-block;padding:12px 22px;background:${b.bg};color:${b.color};text-decoration:none;border-radius:6px;font-weight:700;">${escapeHtml(b.text)}</a></td></tr>`;
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};text-align:${b.align};"><a href="${escapeHtml(b.url)}" style="display:inline-block;padding:12px 22px;background:${b.bg};color:${b.color};text-decoration:none;border-radius:6px;${typographyStyle(b)};">${escapeHtml(b.text)}</a></td></tr>`;
         }
         if (b.type === "image") {
           return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><img src="${escapeHtml(b.src)}" alt="${escapeHtml(b.alt)}" style="display:block;width:100%;max-width:100%;height:auto;border-radius:8px;" /></td></tr>`;
@@ -889,7 +1100,7 @@
           return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><div style="height:${b.thickness}px;background:${b.color};"></div></td></tr>`;
         }
         if (b.type === "twoCol") {
-          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:${b.gap / 2}px;font-family:Arial,sans-serif;color:#1f2937;">${escapeHtml(b.left)}</td><td width="50%" valign="top" style="padding-left:${b.gap / 2}px;font-family:Arial,sans-serif;color:#1f2937;">${escapeHtml(b.right)}</td></tr></table></td></tr>`;
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:${b.gap / 2}px;color:#1f2937;${typographyStyle(b)};">${escapeHtml(b.left)}</td><td width="50%" valign="top" style="padding-left:${b.gap / 2}px;color:#1f2937;${typographyStyle(b)};">${escapeHtml(b.right)}</td></tr></table></td></tr>`;
         }
 
         // customHtml / userTemplate
@@ -966,6 +1177,28 @@
 
     document.getElementById("viewMobileBtn").addEventListener("click", () => {
       emailFrame.classList.add("mobile");
+    });
+
+    document.getElementById("generalPreviewBtn").addEventListener("click", () => {
+      fullPreviewFrame.srcdoc = toEmailHtml();
+      fullPreviewFrameWrap.classList.remove("mobile");
+      previewModal.classList.add("show");
+    });
+
+    document.getElementById("closePreviewBtn").addEventListener("click", () => {
+      previewModal.classList.remove("show");
+    });
+
+    document.getElementById("previewDesktopBtn").addEventListener("click", () => {
+      fullPreviewFrameWrap.classList.remove("mobile");
+    });
+
+    document.getElementById("previewMobileBtn").addEventListener("click", () => {
+      fullPreviewFrameWrap.classList.add("mobile");
+    });
+
+    previewModal.addEventListener("click", (e) => {
+      if (e.target === previewModal) previewModal.classList.remove("show");
     });
 
     document.getElementById("copyBtn").addEventListener("click", async () => {
