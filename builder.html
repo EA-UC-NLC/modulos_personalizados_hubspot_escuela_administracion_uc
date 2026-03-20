@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Builder - HubSpot EA-UC</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel-2: #1a2438;
+      --line: #2b3851;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #00b0db;
+      --primary-2: #0093b3;
+      --accent: #ffd700;
+      --danger: #ef4444;
+      --ok: #16a34a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at 10% 10%, #1b2840 0%, var(--bg) 40%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 56px 1fr;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 16, 28, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 0 12px;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: #fff;
+      margin-right: 10px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      border: 1px solid #2e4462;
+      color: #9cc8ff;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .topbar .spacer { flex: 1; }
+
+    .btn {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: #182339;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .btn:hover { border-color: #3d5678; }
+
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn.primary:hover { background: var(--primary-2); border-color: var(--primary-2); }
+    .btn.danger { border-color: #5b2730; color: #ffb4bf; }
+    .btn.ok { border-color: #234d35; color: #98f5b2; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr 340px;
+      min-height: 0;
+    }
+
+    .panel {
+      border-right: 1px solid var(--line);
+      background: rgba(15, 23, 38, 0.9);
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .panel.right {
+      border-right: none;
+      border-left: 1px solid var(--line);
+    }
+
+    .panel-title {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tool {
+      border: 1px dashed #33507a;
+      background: #162138;
+      color: #c9ddff;
+      border-radius: 10px;
+      padding: 10px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .tool:active { cursor: grabbing; }
+
+    .creator {
+      border: 1px solid var(--line);
+      background: #10192b;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .creator input, .creator textarea, .field input, .field textarea, .field select {
+      width: 100%;
+      background: #0f1625;
+      color: var(--text);
+      border: 1px solid #324661;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.8rem;
+    }
+
+    .creator textarea { min-height: 110px; resize: vertical; }
+
+    .canvas-wrap {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .email-frame {
+      width: 620px;
+      max-width: 100%;
+      min-height: 500px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #2e3f5c;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      overflow: hidden;
+      transition: width .2s ease;
+      position: relative;
+    }
+
+    .email-frame.mobile {
+      width: 380px;
+    }
+
+    .canvas {
+      padding: 14px;
+      background: #f4f7fb;
+      min-height: 460px;
+    }
+
+    .drop-zone {
+      border: 2px dashed transparent;
+      height: 14px;
+      margin: 6px 0;
+      border-radius: 8px;
+    }
+
+    .drop-zone.active {
+      border-color: #00b0db;
+      background: rgba(0,176,219,0.1);
+      height: 28px;
+    }
+
+    .block {
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .block.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0,176,219,0.2);
+    }
+
+    .block-head {
+      background: #eef4fd;
+      border-bottom: 1px solid #dbe3ef;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      color: #466182;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      opacity: 0.8;
+    }
+
+    .block-content {
+      padding: 14px;
+      color: #0f172a;
+    }
+
+    .mini-button {
+      display: inline-block;
+      background: #00b0db;
+      color: #fff;
+      border-radius: 7px;
+      padding: 9px 16px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      text-decoration: none;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .two-col > div {
+      background: #f2f6fb;
+      border: 1px solid #dae3f2;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 70px;
+      font-size: 0.84rem;
+      color: #243040;
+    }
+
+    .empty {
+      border: 2px dashed #b5c5dc;
+      border-radius: 10px;
+      text-align: center;
+      color: #627b9e;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 30px 10px;
+    }
+
+    .field {
+      margin-bottom: 9px;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stack { display: flex; flex-direction: column; gap: 8px; }
+
+    .helper {
+      color: #8ca0bf;
+      font-size: 0.74rem;
+      line-height: 1.4;
+      margin-top: 3px;
+    }
+
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .saved-item {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+      background: #141f34;
+      border: 1px solid #2f4464;
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 0.78rem;
+      color: #c5d8f5;
+    }
+
+    .saved-item button {
+      border: 1px solid #466182;
+      background: transparent;
+      color: #c5d8f5;
+      border-radius: 6px;
+      padding: 4px 7px;
+      cursor: pointer;
+      font-size: 0.72rem;
+    }
+
+    .toast {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      background: #143223;
+      border: 1px solid #2f7049;
+      color: #9cf4be;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all .2s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1280px) {
+      .layout { grid-template-columns: 260px 1fr 320px; }
+    }
+
+    @media (max-width: 1080px) {
+      body { grid-template-rows: auto 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      .panel, .panel.right { border: none; border-bottom: 1px solid var(--line); }
+      .panel.right { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="btn" href="/">Volver</a>
+    <div class="brand">Email Builder Interactivo</div>
+    <span class="badge">Drag & Drop</span>
+    <span class="badge">No-code + HTML</span>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="viewDesktopBtn">Desktop</button>
+    <button class="btn" id="viewMobileBtn">Mobile</button>
+    <button class="btn" id="clearBtn">Limpiar</button>
+    <button class="btn" id="copyBtn">Copiar HTML</button>
+    <button class="btn primary" id="downloadBtn">Descargar HTML</button>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <div class="panel-title">Bloques base</div>
+      <div class="tool-grid" id="baseTools"></div>
+
+      <div class="panel-title">Creador de elemento</div>
+      <div class="creator">
+        <input id="customName" type="text" placeholder="Nombre del elemento" />
+        <textarea id="customHtml" placeholder="HTML del bloque (ej: <h2>Nuevo bloque</h2>)"></textarea>
+        <button class="btn ok" id="saveCustomBtn">Guardar elemento</button>
+        <div class="helper">Se guarda localmente en tu navegador. Puedes reutilizarlo en cualquier momento.</div>
+      </div>
+
+      <div class="panel-title" style="margin-top:12px;">Mis elementos</div>
+      <div id="customTools" class="saved-list"></div>
+    </aside>
+
+    <section class="canvas-wrap">
+      <div class="email-frame" id="emailFrame">
+        <div class="canvas" id="canvas"></div>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <div class="panel-title">Propiedades del elemento</div>
+      <div id="properties" class="stack"></div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const basePalette = [
+      { type: "heading", label: "Titulo" },
+      { type: "text", label: "Texto" },
+      { type: "button", label: "Boton" },
+      { type: "image", label: "Imagen" },
+      { type: "spacer", label: "Espaciador" },
+      { type: "divider", label: "Divisor" },
+      { type: "twoCol", label: "2 Columnas" },
+      { type: "customHtml", label: "HTML libre" }
+    ];
+
+    let blocks = [];
+    let selectedId = null;
+    let dragType = null;
+    let dragIndex = null;
+
+    const canvas = document.getElementById("canvas");
+    const propertiesEl = document.getElementById("properties");
+    const baseToolsEl = document.getElementById("baseTools");
+    const customToolsEl = document.getElementById("customTools");
+    const emailFrame = document.getElementById("emailFrame");
+
+    function uid() {
+      return "b_" + Math.random().toString(36).slice(2, 9);
+    }
+
+    function getDefaultBlock(type) {
+      if (type === "heading") return { id: uid(), type, text: "Titulo principal", level: "h2", align: "left", color: "#0f172a", bg: "#ffffff", padding: 14 };
+      if (type === "text") return { id: uid(), type, text: "Texto descriptivo del bloque.", align: "left", color: "#334155", bg: "#ffffff", padding: 14 };
+      if (type === "button") return { id: uid(), type, text: "REGISTRATE", url: "#", align: "left", bg: "#00b0db", color: "#ffffff", padding: 14 };
+      if (type === "image") return { id: uid(), type, src: "https://placehold.co/560x220/e5eef8/385173?text=Imagen", alt: "Imagen", padding: 14, bg: "#ffffff" };
+      if (type === "spacer") return { id: uid(), type, height: 22, bg: "#ffffff" };
+      if (type === "divider") return { id: uid(), type, color: "#d7e2f0", thickness: 1, padding: 14, bg: "#ffffff" };
+      if (type === "twoCol") return { id: uid(), type, left: "Columna A", right: "Columna B", gap: 10, bg: "#ffffff", padding: 14 };
+      if (type === "customHtml") return { id: uid(), type, html: "<div style='padding:12px;border:1px dashed #9ab0ce;border-radius:8px;'>Bloque HTML libre</div>", bg: "#ffffff", padding: 14 };
+      return { id: uid(), type: "text", text: "Nuevo bloque" };
+    }
+
+    function blockTypeName(type) {
+      const map = {
+        heading: "Titulo",
+        text: "Texto",
+        button: "Boton",
+        image: "Imagen",
+        spacer: "Espaciador",
+        divider: "Divisor",
+        twoCol: "2 Columnas",
+        customHtml: "HTML libre",
+        userTemplate: "Elemento custom"
+      };
+      return map[type] || type;
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById("toast");
+      toast.textContent = text;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function setSelected(id) {
+      selectedId = id;
+      render();
+    }
+
+    function getSelectedBlock() {
+      return blocks.find((b) => b.id === selectedId) || null;
+    }
+
+    function moveBlock(index, targetIndex) {
+      if (targetIndex < 0) targetIndex = 0;
+      if (targetIndex > blocks.length) targetIndex = blocks.length;
+      const [moved] = blocks.splice(index, 1);
+      blocks.splice(targetIndex, 0, moved);
+    }
+
+    function createDropZone(index) {
+      const z = document.createElement("div");
+      z.className = "drop-zone";
+
+      z.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        z.classList.add("active");
+      });
+
+      z.addEventListener("dragleave", () => {
+        z.classList.remove("active");
+      });
+
+      z.addEventListener("drop", (e) => {
+        e.preventDefault();
+        z.classList.remove("active");
+
+        if (dragType === "new") {
+          const t = e.dataTransfer.getData("text/blockType");
+          const customPayload = e.dataTransfer.getData("text/customTemplate");
+          let block;
+
+          if (customPayload) {
+            const payload = JSON.parse(customPayload);
+            block = { id: uid(), type: "userTemplate", name: payload.name, html: payload.html, bg: "#ffffff", padding: 14 };
+          } else {
+            block = getDefaultBlock(t);
+          }
+
+          blocks.splice(index, 0, block);
+          selectedId = block.id;
+        }
+
+        if (dragType === "existing") {
+          const from = Number(e.dataTransfer.getData("text/blockIndex"));
+          moveBlock(from, from < index ? index - 1 : index);
+        }
+
+        render();
+      });
+
+      return z;
+    }
+
+    function renderBlockContent(block) {
+      if (block.type === "heading") {
+        const tag = block.level || "h2";
+        return `<${tag} style="margin:0;color:${block.color};text-align:${block.align};">${block.text}</${tag}>`;
+      }
+
+      if (block.type === "text") {
+        return `<p style="margin:0;color:${block.color};text-align:${block.align};line-height:1.5;">${block.text}</p>`;
+      }
+
+      if (block.type === "button") {
+        return `<div style="text-align:${block.align};"><a class="mini-button" href="${block.url}" style="background:${block.bg};color:${block.color};">${block.text}</a></div>`;
+      }
+
+      if (block.type === "image") {
+        return `<img src="${block.src}" alt="${block.alt}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;" />`;
+      }
+
+      if (block.type === "spacer") {
+        return `<div style="height:${block.height}px;"></div>`;
+      }
+
+      if (block.type === "divider") {
+        return `<div style="height:${block.thickness}px;background:${block.color};"></div>`;
+      }
+
+      if (block.type === "twoCol") {
+        return `<div class="two-col" style="gap:${block.gap}px;"><div>${block.left}</div><div>${block.right}</div></div>`;
+      }
+
+      if (block.type === "customHtml" || block.type === "userTemplate") {
+        return block.html || "";
+      }
+
+      return "";
+    }
+
+    function renderCanvas() {
+      canvas.innerHTML = "";
+
+      if (!blocks.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Arrastra bloques desde la izquierda para construir tu correo";
+        canvas.appendChild(createDropZone(0));
+        canvas.appendChild(empty);
+        canvas.appendChild(createDropZone(0));
+        return;
+      }
+
+      blocks.forEach((block, index) => {
+        canvas.appendChild(createDropZone(index));
+
+        const node = document.createElement("article");
+        node.className = "block" + (selectedId === block.id ? " selected" : "");
+        node.draggable = true;
+
+        node.addEventListener("click", () => setSelected(block.id));
+
+        node.addEventListener("dragstart", (e) => {
+          dragType = "existing";
+          dragIndex = index;
+          e.dataTransfer.setData("text/blockIndex", String(index));
+        });
+
+        const head = document.createElement("div");
+        head.className = "block-head";
+        head.innerHTML = `<span>${blockTypeName(block.type)}</span><span class="drag-handle">Mover</span>`;
+
+        const content = document.createElement("div");
+        content.className = "block-content";
+        content.style.padding = `${block.padding || 0}px`;
+        content.style.background = block.bg || "#ffffff";
+        content.innerHTML = renderBlockContent(block);
+
+        node.appendChild(head);
+        node.appendChild(content);
+        canvas.appendChild(node);
+      });
+
+      canvas.appendChild(createDropZone(blocks.length));
+    }
+
+    function makeField(label, control) {
+      const wrap = document.createElement("div");
+      wrap.className = "field";
+      const l = document.createElement("label");
+      l.textContent = label;
+      wrap.appendChild(l);
+      wrap.appendChild(control);
+      return wrap;
+    }
+
+    function inputText(value, onChange) {
+      const i = document.createElement("input");
+      i.value = value ?? "";
+      i.addEventListener("input", (e) => onChange(e.target.value));
+      return i;
+    }
+
+    function inputNumber(value, onChange, min = 0, max = 999) {
+      const i = document.createElement("input");
+      i.type = "number";
+      i.min = min;
+      i.max = max;
+      i.value = value ?? 0;
+      i.addEventListener("input", (e) => onChange(Number(e.target.value || 0)));
+      return i;
+    }
+
+    function inputColor(value, onChange) {
+      const i = document.createElement("input");
+      i.type = "color";
+      i.value = value || "#ffffff";
+      i.addEventListener("input", (e) => onChange(e.target.value));
+      return i;
+    }
+
+    function inputTextArea(value, onChange) {
+      const t = document.createElement("textarea");
+      t.value = value ?? "";
+      t.rows = 5;
+      t.addEventListener("input", (e) => onChange(e.target.value));
+      return t;
+    }
+
+    function inputSelect(value, options, onChange) {
+      const s = document.createElement("select");
+      options.forEach((opt) => {
+        const o = document.createElement("option");
+        o.value = opt.value;
+        o.textContent = opt.label;
+        if (opt.value === value) o.selected = true;
+        s.appendChild(o);
+      });
+      s.addEventListener("change", (e) => onChange(e.target.value));
+      return s;
+    }
+
+    function renderProperties() {
+      propertiesEl.innerHTML = "";
+      const b = getSelectedBlock();
+
+      if (!b) {
+        const msg = document.createElement("div");
+        msg.className = "helper";
+        msg.textContent = "Selecciona un bloque para editar sus propiedades.";
+        propertiesEl.appendChild(msg);
+        return;
+      }
+
+      const title = document.createElement("div");
+      title.className = "panel-title";
+      title.textContent = blockTypeName(b.type);
+      propertiesEl.appendChild(title);
+
+      // Generic
+      propertiesEl.appendChild(makeField("Padding", inputNumber(b.padding || 0, (v) => { b.padding = v; renderCanvas(); })));
+      propertiesEl.appendChild(makeField("Fondo", inputColor(b.bg || "#ffffff", (v) => { b.bg = v; renderCanvas(); })));
+
+      if (b.type === "heading") {
+        propertiesEl.appendChild(makeField("Texto", inputText(b.text, (v) => { b.text = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Nivel", inputSelect(b.level, [
+          { value: "h1", label: "H1" },
+          { value: "h2", label: "H2" },
+          { value: "h3", label: "H3" }
+        ], (v) => { b.level = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Color", inputColor(b.color, (v) => { b.color = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Alineacion", inputSelect(b.align, [
+          { value: "left", label: "Izquierda" },
+          { value: "center", label: "Centro" },
+          { value: "right", label: "Derecha" }
+        ], (v) => { b.align = v; renderCanvas(); })));
+      }
+
+      if (b.type === "text") {
+        propertiesEl.appendChild(makeField("Texto", inputTextArea(b.text, (v) => { b.text = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Color", inputColor(b.color, (v) => { b.color = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Alineacion", inputSelect(b.align, [
+          { value: "left", label: "Izquierda" },
+          { value: "center", label: "Centro" },
+          { value: "right", label: "Derecha" }
+        ], (v) => { b.align = v; renderCanvas(); })));
+      }
+
+      if (b.type === "button") {
+        propertiesEl.appendChild(makeField("Texto", inputText(b.text, (v) => { b.text = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("URL", inputText(b.url, (v) => { b.url = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Color boton", inputColor(b.bg, (v) => { b.bg = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Color texto", inputColor(b.color, (v) => { b.color = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Alineacion", inputSelect(b.align, [
+          { value: "left", label: "Izquierda" },
+          { value: "center", label: "Centro" },
+          { value: "right", label: "Derecha" }
+        ], (v) => { b.align = v; renderCanvas(); })));
+      }
+
+      if (b.type === "image") {
+        propertiesEl.appendChild(makeField("URL imagen", inputText(b.src, (v) => { b.src = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Alt", inputText(b.alt, (v) => { b.alt = v; renderCanvas(); })));
+      }
+
+      if (b.type === "spacer") {
+        propertiesEl.appendChild(makeField("Altura", inputNumber(b.height, (v) => { b.height = v; renderCanvas(); }, 0, 500)));
+      }
+
+      if (b.type === "divider") {
+        propertiesEl.appendChild(makeField("Color", inputColor(b.color, (v) => { b.color = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Grosor", inputNumber(b.thickness, (v) => { b.thickness = v; renderCanvas(); }, 1, 10)));
+      }
+
+      if (b.type === "twoCol") {
+        propertiesEl.appendChild(makeField("Columna izquierda", inputTextArea(b.left, (v) => { b.left = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Columna derecha", inputTextArea(b.right, (v) => { b.right = v; renderCanvas(); })));
+        propertiesEl.appendChild(makeField("Separacion", inputNumber(b.gap, (v) => { b.gap = v; renderCanvas(); }, 0, 60)));
+      }
+
+      if (b.type === "customHtml" || b.type === "userTemplate") {
+        propertiesEl.appendChild(makeField("HTML", inputTextArea(b.html, (v) => { b.html = v; renderCanvas(); })));
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "field-row";
+      const dupBtn = document.createElement("button");
+      dupBtn.className = "btn";
+      dupBtn.textContent = "Duplicar";
+      dupBtn.onclick = () => {
+        const copy = structuredClone(b);
+        copy.id = uid();
+        const idx = blocks.findIndex((x) => x.id === b.id);
+        blocks.splice(idx + 1, 0, copy);
+        selectedId = copy.id;
+        render();
+      };
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn danger";
+      delBtn.textContent = "Eliminar";
+      delBtn.onclick = () => {
+        blocks = blocks.filter((x) => x.id !== b.id);
+        selectedId = blocks[0]?.id || null;
+        render();
+      };
+
+      actions.appendChild(dupBtn);
+      actions.appendChild(delBtn);
+      propertiesEl.appendChild(actions);
+    }
+
+    function renderPalette() {
+      baseToolsEl.innerHTML = "";
+
+      basePalette.forEach((item) => {
+        const btn = document.createElement("div");
+        btn.className = "tool";
+        btn.textContent = item.label;
+        btn.draggable = true;
+        btn.addEventListener("dragstart", (e) => {
+          dragType = "new";
+          e.dataTransfer.setData("text/blockType", item.type);
+        });
+        baseToolsEl.appendChild(btn);
+      });
+    }
+
+    function getCustomTemplates() {
+      try {
+        return JSON.parse(localStorage.getItem("email_builder_custom_templates") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function setCustomTemplates(list) {
+      localStorage.setItem("email_builder_custom_templates", JSON.stringify(list));
+    }
+
+    function renderCustomTools() {
+      customToolsEl.innerHTML = "";
+      const list = getCustomTemplates();
+
+      if (!list.length) {
+        const helper = document.createElement("div");
+        helper.className = "helper";
+        helper.textContent = "Aun no tienes elementos guardados.";
+        customToolsEl.appendChild(helper);
+        return;
+      }
+
+      list.forEach((tpl, idx) => {
+        const row = document.createElement("div");
+        row.className = "saved-item";
+
+        const name = document.createElement("span");
+        name.textContent = tpl.name;
+
+        const actions = document.createElement("div");
+        const addBtn = document.createElement("button");
+        addBtn.textContent = "Usar";
+        addBtn.draggable = true;
+        addBtn.addEventListener("dragstart", (e) => {
+          dragType = "new";
+          e.dataTransfer.setData("text/customTemplate", JSON.stringify(tpl));
+        });
+        addBtn.onclick = () => {
+          const block = { id: uid(), type: "userTemplate", name: tpl.name, html: tpl.html, bg: "#ffffff", padding: 14 };
+          blocks.push(block);
+          selectedId = block.id;
+          render();
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "X";
+        delBtn.onclick = () => {
+          const next = getCustomTemplates().filter((_, i) => i !== idx);
+          setCustomTemplates(next);
+          renderCustomTools();
+          showToast("Elemento eliminado");
+        };
+
+        actions.appendChild(addBtn);
+        actions.appendChild(delBtn);
+
+        row.appendChild(name);
+        row.appendChild(actions);
+        customToolsEl.appendChild(row);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function toEmailHtml() {
+      const chunks = blocks.map((b) => {
+        if (b.type === "heading") {
+          const tag = b.level || "h2";
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><${tag} style="margin:0;color:${b.color};text-align:${b.align};font-family:Arial,sans-serif;">${escapeHtml(b.text)}</${tag}></td></tr>`;
+        }
+        if (b.type === "text") {
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};font-family:Arial,sans-serif;color:${b.color};text-align:${b.align};line-height:1.5;">${escapeHtml(b.text)}</td></tr>`;
+        }
+        if (b.type === "button") {
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};text-align:${b.align};font-family:Arial,sans-serif;"><a href="${escapeHtml(b.url)}" style="display:inline-block;padding:12px 22px;background:${b.bg};color:${b.color};text-decoration:none;border-radius:6px;font-weight:700;">${escapeHtml(b.text)}</a></td></tr>`;
+        }
+        if (b.type === "image") {
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><img src="${escapeHtml(b.src)}" alt="${escapeHtml(b.alt)}" style="display:block;width:100%;max-width:100%;height:auto;border-radius:8px;" /></td></tr>`;
+        }
+        if (b.type === "spacer") {
+          return `<tr><td style="height:${b.height}px;background:${b.bg};font-size:0;line-height:0;">&nbsp;</td></tr>`;
+        }
+        if (b.type === "divider") {
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><div style="height:${b.thickness}px;background:${b.color};"></div></td></tr>`;
+        }
+        if (b.type === "twoCol") {
+          return `<tr><td style="padding:${b.padding}px;background:${b.bg};"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:${b.gap / 2}px;font-family:Arial,sans-serif;color:#1f2937;">${escapeHtml(b.left)}</td><td width="50%" valign="top" style="padding-left:${b.gap / 2}px;font-family:Arial,sans-serif;color:#1f2937;">${escapeHtml(b.right)}</td></tr></table></td></tr>`;
+        }
+
+        // customHtml / userTemplate
+        return `<tr><td style="padding:${b.padding}px;background:${b.bg};">${b.html || ""}</td></tr>`;
+      });
+
+      return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email construido</title>
+</head>
+<body style="margin:0;padding:0;background:#edf2f8;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#edf2f8;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#ffffff;border-collapse:collapse;font-family:Arial,sans-serif;">
+          ${chunks.join("\n")}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+    }
+
+    function download(filename, text) {
+      const blob = new Blob([text], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function render() {
+      renderCanvas();
+      renderProperties();
+    }
+
+    // Events
+    document.getElementById("saveCustomBtn").addEventListener("click", () => {
+      const name = document.getElementById("customName").value.trim();
+      const html = document.getElementById("customHtml").value.trim();
+
+      if (!name || !html) {
+        showToast("Completa nombre y HTML");
+        return;
+      }
+
+      const list = getCustomTemplates();
+      list.push({ name, html });
+      setCustomTemplates(list);
+      document.getElementById("customName").value = "";
+      document.getElementById("customHtml").value = "";
+      renderCustomTools();
+      showToast("Elemento guardado");
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (!confirm("¿Limpiar todo el canvas?")) return;
+      blocks = [];
+      selectedId = null;
+      render();
+    });
+
+    document.getElementById("viewDesktopBtn").addEventListener("click", () => {
+      emailFrame.classList.remove("mobile");
+    });
+
+    document.getElementById("viewMobileBtn").addEventListener("click", () => {
+      emailFrame.classList.add("mobile");
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      const html = toEmailHtml();
+      await navigator.clipboard.writeText(html);
+      showToast("HTML copiado");
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const html = toEmailHtml();
+      download("email_builder_output.html", html);
+      showToast("Archivo descargado");
+    });
+
+    // Boot
+    renderPalette();
+    renderCustomTools();
+    blocks = [
+      getDefaultBlock("heading"),
+      getDefaultBlock("text"),
+      getDefaultBlock("button")
+    ];
+    selectedId = blocks[0].id;
+    render();
+  </script>
+</body>
+</html>

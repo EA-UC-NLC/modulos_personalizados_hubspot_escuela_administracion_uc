@@ -60,6 +60,39 @@
     }
     .hero p { color: #8b949e; font-size: 1.05rem; line-height: 1.7; max-width: 600px; margin: 0 auto; }
 
+    .hero-actions {
+      margin-top: 18px;
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid #334155;
+      color: #dbeafe;
+      background: #17243a;
+    }
+
+    .hero-link.primary {
+      background: #00b0db;
+      border-color: #00b0db;
+      color: #ffffff;
+    }
+
+    .hero-link.primary:hover {
+      background: #0095bc;
+      border-color: #0095bc;
+    }
+
     .category { max-width: 1300px; margin: 0 auto; padding: 0 30px; }
     .category-header { display: flex; align-items: center; gap: 12px; padding: 50px 0 24px; }
     .category-header h2 { font-size: 1.4rem; font-weight: 700; color: #fff; }
@@ -171,6 +204,10 @@
   <div class="hero">
     <h1>Biblioteca de <em>Módulos de Email</em></h1>
     <p>Componentes HTML reutilizables listos para HubSpot. Haz clic en cualquier módulo para previsualizarlo en desktop y mobile, y descargar el código.</p>
+    <div class="hero-actions">
+      <a class="hero-link primary" href="/builder.html">Drag and Drop Builder</a>
+      <a class="hero-link" href="/viewer.html?m=hero_evento&f=/modulos/hero_evento/hero_evento.html">Abrir visor rapido</a>
+    </div>
   </div>
 
   <div class="category">
