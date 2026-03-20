@@ -12,79 +12,107 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 60px 20px;
+            color: #1f2937;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 0.6s ease;
+            margin-bottom: 70px;
+            animation: fadeInDown 0.8s ease;
         }
 
         h1 {
-            color: #03122E;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            color: #ffffff;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
         .subtitle {
             color: #00b0db;
-            font-size: 1.2rem;
-            font-weight: 500;
+            font-size: 1.3rem;
+            font-weight: 600;
             margin-bottom: 20px;
         }
 
         .description {
-            color: #555;
-            font-size: 1rem;
-            max-width: 600px;
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            max-width: 700px;
             margin: 0 auto;
-            line-height: 1.6;
+            line-height: 1.8;
         }
 
         .modules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 35px;
             margin-top: 50px;
         }
 
         .module-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.6s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.7s ease;
+            border: 1px solid rgba(0, 176, 219, 0.1);
         }
 
         .module-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 40px rgba(0, 176, 219, 0.2);
+            transform: translateY(-12px);
+            box-shadow: 0 30px 80px rgba(0, 176, 219, 0.25);
+            border-color: rgba(0, 176, 219, 0.3);
+        }
+
+        .module-preview {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 20px;
+            border-bottom: 2px solid rgba(0, 176, 219, 0.1);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            position: relative;
+        }
+
+        .module-preview img {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
         }
 
         .module-header {
-            background: linear-gradient(135deg, #00b0db 0%, #0093b3 100%);
+            background: linear-gradient(135deg, #00b0db 0%, #0086a8 100%);
             color: white;
-            padding: 25px 20px;
-            text-align: center;
+            padding: 24px 20px;
+            text-align: left;
         }
 
         .module-header h2 {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
 
         .module-type {
@@ -94,116 +122,127 @@
         }
 
         .module-content {
-            padding: 25px 20px;
+            padding: 24px 20px;
         }
 
         .module-description {
-            color: #555;
+            color: #475569;
             font-size: 0.95rem;
             line-height: 1.6;
-            margin-bottom: 20px;
-            min-height: 60px;
+            margin-bottom: 18px;
         }
 
         .module-features {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .feature-tag {
-            background: #f0f7ff;
-            color: #00b0db;
-            padding: 5px 12px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+            color: #0086c4;
+            padding: 6px 14px;
+            border-radius: 24px;
             font-size: 0.85rem;
             font-weight: 600;
+            border: 1px solid rgba(0, 176, 219, 0.2);
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 12px;
         }
 
         .cta-button {
-            display: inline-block;
+            flex: 1;
             background: #00b0db;
             color: white;
-            padding: 12px 30px;
+            padding: 12px 16px;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s ease;
             border: 2px solid #00b0db;
             text-align: center;
-            width: 100%;
-            margin-bottom: 10px;
+            font-size: 0.95rem;
         }
 
         .cta-button:hover {
             background: #0093b3;
             border-color: #0093b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 176, 219, 0.3);
         }
 
         .cta-secondary {
             background: transparent;
             color: #00b0db;
-            border: 2px solid #00b0db;
+            border: 2px solid #e0f2fe;
         }
 
         .cta-secondary:hover {
             background: #f0f7ff;
+            border-color: #00b0db;
         }
 
         .category-section {
-            margin-bottom: 60px;
+            margin-bottom: 80px;
         }
 
         .category-title {
             display: flex;
             align-items: center;
             gap: 15px;
-            margin: 40px 0 25px 0;
-            color: #03122E;
-            font-size: 1.8rem;
-            font-weight: 700;
+            margin: 60px 0 30px 0;
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .category-icon {
-            font-size: 2rem;
+            font-size: 2.5rem;
         }
 
         .category-divider {
-            height: 3px;
+            height: 4px;
             background: linear-gradient(90deg, #00b0db 0%, #ffd700 50%, #00b0db 100%);
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            border-radius: 2px;
         }
 
         footer {
             text-align: center;
-            margin-top: 80px;
-            padding-top: 40px;
-            border-top: 2px solid rgba(3, 18, 46, 0.1);
-            color: #666;
+            margin-top: 100px;
+            padding-top: 50px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
             font-size: 0.9rem;
         }
 
         .back-to-top {
             display: inline-block;
-            margin-top: 20px;
-            padding: 8px 16px;
+            margin-top: 25px;
+            padding: 10px 20px;
             background: #ffd700;
             color: #03122E;
-            border-radius: 6px;
+            border-radius: 8px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             transition: all 0.3s ease;
         }
 
         .back-to-top:hover {
             background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
         }
 
         @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-30px);
             }
             to {
                 opacity: 1;
@@ -214,7 +253,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -224,7 +263,7 @@
 
         @media (max-width: 768px) {
             h1 {
-                font-size: 1.8rem;
+                font-size: 2.2rem;
             }
 
             .modules-grid {
@@ -232,7 +271,15 @@
             }
 
             .category-title {
-                font-size: 1.4rem;
+                font-size: 1.6rem;
+            }
+
+            .module-actions {
+                flex-direction: column;
+            }
+
+            .cta-button {
+                width: 100%;
             }
         }
     </style>
@@ -263,6 +310,9 @@
                         <h2>Hero Evento</h2>
                         <p class="module-type">Banner con Información de Evento</p>
                     </div>
+                    <div class="module-preview">
+                        <div class="preview-placeholder">📅 Vista previa del módulo Hero Evento</div>
+                    </div>
                     <div class="module-content">
                         <p class="module-description">
                             Héroe personalizable para promocionar eventos con fecha, hora y ubicación. Incluye 3 cajas de información y CTA.
@@ -272,12 +322,14 @@
                             <span class="feature-tag">3 Boxes</span>
                             <span class="feature-tag">CTA</span>
                         </div>
-                        <a href="/modulos/hero_evento/hero_evento.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/hero_evento/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
+                        <div class="module-actions">
+                            <a href="/modulos/hero_evento/hero_evento.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/hero_evento/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -286,6 +338,9 @@
                     <div class="module-header">
                         <h2>Hero Diplomado</h2>
                         <p class="module-type">Banner 50/50 para Programas</p>
+                    </div>
+                    <div class="module-preview">
+                        <div class="preview-placeholder">🎓 Vista previa del módulo Hero Diplomado</div>
                     </div>
                     <div class="module-content">
                         <p class="module-description">
@@ -296,20 +351,20 @@
                             <span class="feature-tag">Flexible</span>
                             <span class="feature-tag">CTA</span>
                         </div>
-                        <a href="/modulos/hero_diplomado/hero_diplomado.html" class="cta-button" target="_blank">
-                            📂 Ver Módulo
-                        </a>
-                        <a href="/modulos/hero_diplomado/README.md" class="cta-button cta-secondary" target="_blank">
-                            📄 Ver Documentación
-                        </a>
+                        <div class="module-actions">
+                            <a href="/modulos/hero_diplomado/hero_diplomado.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/hero_diplomado/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Hero Destacado -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Hero Destacado</h2>
-                        <p class="module-type">Banner con Urgencia</p>
+                <div class="module-cardpreview">
+                        <div class="preview-placeholder">⚡ Vista previa del módulo Hero Destacado</div>
                     </div>
                     <div class="module-content">
                         <p class="module-description">
@@ -320,7 +375,14 @@
                             <span class="feature-tag">Urgencia</span>
                             <span class="feature-tag">Dinámico</span>
                         </div>
-                        <a href="/modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
+                        <div class="module-actions">
+                            <a href="/modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/hero_destacado/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </divhref="/modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
                             📂 Ver Módulo
                         </a>
                         <a href="/modulos/hero_destacado/README.md" class="cta-button cta-secondary" target="_blank">
@@ -340,10 +402,8 @@
             <div class="category-divider"></div>
             <div class="modules-grid">
                 <!-- Cards 4 Col -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Cards 4 Col</h2>
-                        <p class="module-type">Grilla de 4 Tarjetas</p>
+                <div class="module-cardpreview">
+                        <div class="preview-placeholder">🎨 Vista previa del módulo Cards 4 Columnas</div>
                     </div>
                     <div class="module-content">
                         <p class="module-description">
@@ -354,26 +414,38 @@
                             <span class="feature-tag">Iconos</span>
                             <span class="feature-tag">Responsive</span>
                         </div>
-                        <a href="/modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
+                        <div class="module-actions">
+                            <a href="/modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/cards_4col/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </divhref="/modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
                             📂 Ver Módulo
                         </a>
                         <a href="/modulos/cards_4col/README.md" class="cta-button cta-secondary" target="_blank">
                             📄 Ver Documentación
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Cards 2x2 -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Cards 2x2</h2>
-                        <p class="module-type">Grilla de 2x2 Tarjetas</p>
+                        </a>preview">
+                        <div class="preview-placeholder">👥 Vista previa del módulo Cards 2x2</div>
                     </div>
                     <div class="module-content">
                         <p class="module-description">
                             Grilla 2x2 para speaker, testimonios o destacados. Incluye avatar, nombre y descripción por persona.
                         </p>
                         <div class="module-features">
+                            <span class="feature-tag">Grilla 2x2</span>
+                            <span class="feature-tag">Avatar</span>
+                            <span class="feature-tag">Flexible</span>
+                        </div>
+                        <div class="module-actions">
+                            <a href="/modulos/cards_grid_2x2/cards_grid_2x2.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/cards_grid_2x2/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </divv class="module-features">
                             <span class="feature-tag">Grilla 2x2</span>
                             <span class="feature-tag">Avatar</span>
                             <span class="feature-tag">Flexible</span>
@@ -393,21 +465,26 @@
         <section class="category-section">
             <div class="category-title">
                 <span class="category-icon">📋</span>
-                <span>Listados / Eventos</span>
-            </div>
-            <div class="category-divider"></div>
-            <div class="modules-grid">
-                <!-- Event List -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Event List</h2>
-                        <p class="module-type">Listado de Eventos / Agenda</p>
+                <span>Listados / Eventopreview">
+                        <div class="preview-placeholder">⏰ Vista previa del módulo Event List</div>
                     </div>
                     <div class="module-content">
                         <p class="module-description">
                             Listado vertical de eventos con hora, duración y descripción. Perfecto para agendas y programas de eventos.
                         </p>
                         <div class="module-features">
+                            <span class="feature-tag">Vertical</span>
+                            <span class="feature-tag">Hora/Duración</span>
+                            <span class="feature-tag">Separadores</span>
+                        </div>
+                        <div class="module-actions">
+                            <a href="/modulos/event_list_program/event_list_program.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/event_list_program/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </divv class="module-features">
                             <span class="feature-tag">Vertical</span>
                             <span class="feature-tag">Hora/Duración</span>
                             <span class="feature-tag">Separadores</span>
@@ -422,21 +499,26 @@
                 </div>
             </div>
         </section>
-
-        <!-- CTA Section -->
-        <section class="category-section">
-            <div class="category-title">
-                <span class="category-icon">🔘</span>
-                <span>Llamadas a Acción</span>
-            </div>
-            <div class="category-divider"></div>
-            <div class="modules-grid">
-                <!-- CTA Buttons -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>CTA Buttons</h2>
-                        <p class="module-type">4 Estilos de Botones</p>
+preview">
+                        <div class="preview-placeholder">🔘 Vista previa del módulo CTA Buttons</div>
                     </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            4 variantes de botones CTA: primario azul, secundario dorado, terciario blanco y alternativo. Altamente customizable.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">4 Estilos</span>
+                            <span class="feature-tag">Sombras</span>
+                            <span class="feature-tag">Hover</span>
+                        </div>
+                        <div class="module-actions">
+                            <a href="/modulos/cta_buttons/cta_multiple.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/cta_buttons/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </div
                     <div class="module-content">
                         <p class="module-description">
                             4 variantes de botones CTA: primario azul, secundario dorado, terciario blanco y alternativo. Altamente customizable.
@@ -456,21 +538,26 @@
                 </div>
             </div>
         </section>
-
-        <!-- Dividers Section -->
-        <section class="category-section">
-            <div class="category-title">
-                <span class="category-icon">✨</span>
-                <span>Divisores / Headers</span>
-            </div>
-            <div class="category-divider"></div>
-            <div class="modules-grid">
-                <!-- Dividers -->
-                <div class="module-card">
-                    <div class="module-header">
-                        <h2>Dividers & Headers</h2>
-                        <p class="module-type">7 Variantes</p>
+preview">
+                        <div class="preview-placeholder">✨ Vista previa del módulo Dividers & Headers</div>
                     </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            7 opciones de separadores y headers: lineal simple, con icono, azul, dorado, oscuro, gradiente y doble línea.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">7 Estilos</span>
+                            <span class="feature-tag">Gradientes</span>
+                            <span class="feature-tag">Headers</span>
+                        </div>
+                        <div class="module-actions">
+                            <a href="/modulos/dividers_headers/divider_header.html" class="cta-button" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/modulos/dividers_headers/README.md" class="cta-button cta-secondary" target="_blank">
+                                📖 Docs
+                            </a>
+                        </div
                     <div class="module-content">
                         <p class="module-description">
                             7 opciones de separadores y headers: lineal simple, con icono, azul, dorado, oscuro, gradiente y doble línea.
