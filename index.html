@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulos de Email HubSpot - Escuela de Administración UC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        h1 {
+            color: #03122E;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #00b0db;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #555;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0, 176, 219, 0.2);
+        }
+
+        .module-header {
+            background: linear-gradient(135deg, #00b0db 0%, #0093b3 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .module-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .module-type {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .module-content {
+            padding: 25px 20px;
+        }
+
+        .module-description {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .module-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .feature-tag {
+            background: #f0f7ff;
+            color: #00b0db;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #00b0db;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #00b0db;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .cta-button:hover {
+            background: #0093b3;
+            border-color: #0093b3;
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: #00b0db;
+            border: 2px solid #00b0db;
+        }
+
+        .cta-secondary:hover {
+            background: #f0f7ff;
+        }
+
+        .category-section {
+            margin-bottom: 60px;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 40px 0 25px 0;
+            color: #03122E;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        .category-divider {
+            height: 3px;
+            background: linear-gradient(90deg, #00b0db 0%, #ffd700 50%, #00b0db 100%);
+            margin-bottom: 30px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 2px solid rgba(3, 18, 46, 0.1);
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .back-to-top {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #ffd700;
+            color: #03122E;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: #ffed4e;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>📧 Módulos de Email HubSpot</h1>
+            <p class="subtitle">Escuela de Administración - Universidad Católica de Chile</p>
+            <p class="description">
+                Colección de componentes HTML reutilizables diseñados para campañas de email marketing en HubSpot. 
+                Todos los módulos son responsive, compatibles con clientes de email y faciles de personalizar.
+            </p>
+        </header>
+
+        <!-- Heroes Section -->
+        <section class="category-section">
+            <div class="category-title">
+                <span class="category-icon">🎯</span>
+                <span>Héroes / Banners</span>
+            </div>
+            <div class="category-divider"></div>
+            <div class="modules-grid">
+                <!-- Hero Evento -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Hero Evento</h2>
+                        <p class="module-type">Banner con Información de Evento</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Héroe personalizable para promocionar eventos con fecha, hora y ubicación. Incluye 3 cajas de información y CTA.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">Gradiente</span>
+                            <span class="feature-tag">3 Boxes</span>
+                            <span class="feature-tag">CTA</span>
+                        </div>
+                        <a href="modulos/hero_evento/hero_evento.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/hero_evento/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Diplomado -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Hero Diplomado</h2>
+                        <p class="module-type">Banner 50/50 para Programas</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Layout 50/50 perfecto para promocionar programas, diplomados y cursos. Imagen + contenido balanceado.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">2 Columnas</span>
+                            <span class="feature-tag">Flexible</span>
+                            <span class="feature-tag">CTA</span>
+                        </div>
+                        <a href="modulos/hero_diplomado/hero_diplomado.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/hero_diplomado/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Destacado -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Hero Destacado</h2>
+                        <p class="module-type">Banner con Urgencia</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Héroe con contadores en tiempo real para cupo disponible y días restantes. Crea urgencia de inscripción.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">Contadores</span>
+                            <span class="feature-tag">Urgencia</span>
+                            <span class="feature-tag">Dinámico</span>
+                        </div>
+                        <a href="modulos/hero_destacado/hero_destacado.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/hero_destacado/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards Section -->
+        <section class="category-section">
+            <div class="category-title">
+                <span class="category-icon">🎨</span>
+                <span>Tarjetas / Grillas</span>
+            </div>
+            <div class="category-divider"></div>
+            <div class="modules-grid">
+                <!-- Cards 4 Col -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Cards 4 Col</h2>
+                        <p class="module-type">Grilla de 4 Tarjetas</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Grilla de 4 tarjetas con ícono, título y descripción. Ideal para beneficios, características o servicios.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">4 Columnas</span>
+                            <span class="feature-tag">Iconos</span>
+                            <span class="feature-tag">Responsive</span>
+                        </div>
+                        <a href="modulos/cards_4col/cards_4col.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/cards_4col/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Cards 2x2 -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Cards 2x2</h2>
+                        <p class="module-type">Grilla de 2x2 Tarjetas</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Grilla 2x2 para speaker, testimonios o destacados. Incluye avatar, nombre y descripción por persona.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">Grilla 2x2</span>
+                            <span class="feature-tag">Avatar</span>
+                            <span class="feature-tag">Flexible</span>
+                        </div>
+                        <a href="modulos/cards_grid_2x2/cards_grid_2x2.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/cards_grid_2x2/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lists Section -->
+        <section class="category-section">
+            <div class="category-title">
+                <span class="category-icon">📋</span>
+                <span>Listados / Eventos</span>
+            </div>
+            <div class="category-divider"></div>
+            <div class="modules-grid">
+                <!-- Event List -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Event List</h2>
+                        <p class="module-type">Listado de Eventos / Agenda</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            Listado vertical de eventos con hora, duración y descripción. Perfecto para agendas y programas de eventos.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">Vertical</span>
+                            <span class="feature-tag">Hora/Duración</span>
+                            <span class="feature-tag">Separadores</span>
+                        </div>
+                        <a href="modulos/event_list_program/event_list_program.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/event_list_program/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="category-section">
+            <div class="category-title">
+                <span class="category-icon">🔘</span>
+                <span>Llamadas a Acción</span>
+            </div>
+            <div class="category-divider"></div>
+            <div class="modules-grid">
+                <!-- CTA Buttons -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>CTA Buttons</h2>
+                        <p class="module-type">4 Estilos de Botones</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            4 variantes de botones CTA: primario azul, secundario dorado, terciario blanco y alternativo. Altamente customizable.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">4 Estilos</span>
+                            <span class="feature-tag">Sombras</span>
+                            <span class="feature-tag">Hover</span>
+                        </div>
+                        <a href="modulos/cta_buttons/cta_multiple.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/cta_buttons/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dividers Section -->
+        <section class="category-section">
+            <div class="category-title">
+                <span class="category-icon">✨</span>
+                <span>Divisores / Headers</span>
+            </div>
+            <div class="category-divider"></div>
+            <div class="modules-grid">
+                <!-- Dividers -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <h2>Dividers & Headers</h2>
+                        <p class="module-type">7 Variantes</p>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-description">
+                            7 opciones de separadores y headers: lineal simple, con icono, azul, dorado, oscuro, gradiente y doble línea.
+                        </p>
+                        <div class="module-features">
+                            <span class="feature-tag">7 Estilos</span>
+                            <span class="feature-tag">Gradientes</span>
+                            <span class="feature-tag">Headers</span>
+                        </div>
+                        <a href="modulos/dividers_headers/divider_header.html" class="cta-button" target="_blank">
+                            📂 Ver Módulo
+                        </a>
+                        <a href="modulos/dividers_headers/README.md" class="cta-button cta-secondary" target="_blank">
+                            📄 Ver Documentación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>
+                <strong>Módulos de Email HubSpot</strong> | Escuela de Administración UC<br>
+                Todos los módulos son HTML puro, inline CSS compatible con HubSpot | Última actualización: 20 de Marzo, 2026
+            </p>
+            <a href="#" class="back-to-top">↑ Volver al inicio</a>
+        </footer>
+    </div>
+
+    <script>
+        // Smooth scroll para back-to-top
+        document.querySelectorAll('a[href="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
