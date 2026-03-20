@@ -203,6 +203,87 @@
       gap: 8px;
     }
 
+    .editor-tabs {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 2px;
+    }
+
+    .tab-btn {
+      padding: 6px 10px;
+      border: none;
+      background: #0f141b;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .panel {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .no-code-panel {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #0d131a;
+      gap: 10px;
+      overflow: auto;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 0.76rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #111923;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 0.8rem;
+    }
+
+    .color-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field input[type="color"] {
+      min-height: 36px;
+      padding: 3px;
+    }
+
+    .no-code-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
     .mini-btn {
       border: 1px solid var(--border);
       background: #1b2430;
@@ -338,7 +419,49 @@
         </div>
       </div>
 
-      <textarea id="htmlEditor" spellcheck="false"></textarea>
+      <div class="editor-tabs">
+        <button id="tabNoCode" class="tab-btn active" onclick="switchEditor('nocode')">Sin codigo</button>
+        <button id="tabCode" class="tab-btn" onclick="switchEditor('code')">Codigo</button>
+      </div>
+
+      <div id="panelNoCode" class="panel no-code-panel">
+        <div class="field">
+          <label for="ncTitle">Titulo principal</label>
+          <input id="ncTitle" type="text" placeholder="Ej: Lorem Ipsum Dolor" />
+        </div>
+
+        <div class="field">
+          <label for="ncSubtitle">Subtitulo / bajada</label>
+          <input id="ncSubtitle" type="text" placeholder="Ej: Un encuentro especial..." />
+        </div>
+
+        <div class="field">
+          <label for="ncCta">Texto del CTA</label>
+          <input id="ncCta" type="text" placeholder="Ej: REGISTRATE AHORA" />
+        </div>
+
+        <div class="color-row">
+          <div class="field">
+            <label for="ncPrimary">Color primario</label>
+            <input id="ncPrimary" type="color" value="#00b0db" />
+          </div>
+          <div class="field">
+            <label for="ncAccent">Color acento</label>
+            <input id="ncAccent" type="color" value="#ffd700" />
+          </div>
+          <div class="field">
+            <label for="ncDark">Color oscuro</label>
+            <input id="ncDark" type="color" value="#03122e" />
+          </div>
+        </div>
+
+        <div class="no-code-actions">
+          <button class="mini-btn primary" onclick="applyNoCodeChanges()">Aplicar sin codigo</button>
+          <button class="mini-btn" onclick="syncNoCodeFromHTML()">Sincronizar</button>
+        </div>
+      </div>
+
+      <textarea id="htmlEditor" class="panel hidden" spellcheck="false"></textarea>
     </aside>
   </div>
 
@@ -358,6 +481,16 @@
     const widthValue = document.getElementById("widthValue");
     const autoMobileFix = document.getElementById("autoMobileFix");
     const exportWithFix = document.getElementById("exportWithFix");
+    const panelNoCode = document.getElementById("panelNoCode");
+    const tabNoCode = document.getElementById("tabNoCode");
+    const tabCode = document.getElementById("tabCode");
+
+    const ncTitle = document.getElementById("ncTitle");
+    const ncSubtitle = document.getElementById("ncSubtitle");
+    const ncCta = document.getElementById("ncCta");
+    const ncPrimary = document.getElementById("ncPrimary");
+    const ncAccent = document.getElementById("ncAccent");
+    const ncDark = document.getElementById("ncDark");
 
     let originalHTML = "";
     let currentHTML = "";
@@ -379,10 +512,19 @@
         originalHTML = await res.text();
         currentHTML = originalHTML;
         editor.value = originalHTML;
+        syncNoCodeFromHTML();
         renderPreview();
       } catch (error) {
         editor.value = "Error cargando modulo: " + error.message;
       }
+    }
+
+    function switchEditor(mode) {
+      const codeMode = mode === "code";
+      editor.classList.toggle("hidden", !codeMode);
+      panelNoCode.classList.toggle("hidden", codeMode);
+      tabCode.classList.toggle("active", codeMode);
+      tabNoCode.classList.toggle("active", !codeMode);
     }
 
     function setView(mode) {
@@ -416,6 +558,7 @@
 
     function applyEditorChanges() {
       currentHTML = editor.value;
+      syncNoCodeFromHTML();
       renderPreview();
       showToast("Cambios aplicados");
     }
@@ -423,8 +566,87 @@
     function resetEditor() {
       editor.value = originalHTML;
       currentHTML = originalHTML;
+      syncNoCodeFromHTML();
       renderPreview();
       showToast("Editor restaurado");
+    }
+
+    function syncNoCodeFromHTML() {
+      const html = currentHTML || editor.value || "";
+      if (!html) return;
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      const heading = doc.querySelector("h1, h2, h3");
+      const paragraph = doc.querySelector("p");
+      const cta = doc.querySelector("a");
+
+      ncTitle.value = heading ? heading.textContent.trim() : "";
+      ncSubtitle.value = paragraph ? paragraph.textContent.trim() : "";
+      ncCta.value = cta ? cta.textContent.trim() : "";
+
+      const primaryMatch = html.match(/#00b0db|#0095bc|#00a[0-9a-f]{3}/i);
+      const accentMatch = html.match(/#ffd700|#ffed4e|#f[fd][a-f0-9]{4}/i);
+      const darkMatch = html.match(/#03122e|#0d1117|#161b22/i);
+
+      if (primaryMatch) ncPrimary.value = normalizeHex(primaryMatch[0]);
+      if (accentMatch) ncAccent.value = normalizeHex(accentMatch[0]);
+      if (darkMatch) ncDark.value = normalizeHex(darkMatch[0]);
+    }
+
+    function normalizeHex(value) {
+      const hex = value.toLowerCase();
+      if (hex.length === 4) {
+        return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+      }
+      return hex;
+    }
+
+    function replaceFirstTagContent(html, tagRegex, newContent) {
+      return html.replace(tagRegex, (match, before, _current, after) => before + newContent + after);
+    }
+
+    function applyNoCodeChanges() {
+      let nextHTML = currentHTML || editor.value || "";
+
+      if (ncTitle.value.trim()) {
+        nextHTML = replaceFirstTagContent(
+          nextHTML,
+          /(<h[1-3][^>]*>)([\s\S]*?)(<\/h[1-3]>)/i,
+          ncTitle.value.trim()
+        );
+      }
+
+      if (ncSubtitle.value.trim()) {
+        nextHTML = replaceFirstTagContent(
+          nextHTML,
+          /(<p[^>]*>)([\s\S]*?)(<\/p>)/i,
+          ncSubtitle.value.trim()
+        );
+      }
+
+      if (ncCta.value.trim()) {
+        nextHTML = replaceFirstTagContent(
+          nextHTML,
+          /(<a[^>]*>)([\s\S]*?)(<\/a>)/i,
+          ncCta.value.trim()
+        );
+      }
+
+      // Reemplazos globales de paleta comunes en los modulos.
+      nextHTML = nextHTML
+        .replace(/#00b0db/gi, ncPrimary.value)
+        .replace(/#0095bc/gi, ncPrimary.value)
+        .replace(/#ffd700/gi, ncAccent.value)
+        .replace(/#ffed4e/gi, ncAccent.value)
+        .replace(/#03122e/gi, ncDark.value)
+        .replace(/#03122E/g, ncDark.value);
+
+      currentHTML = nextHTML;
+      editor.value = currentHTML;
+      renderPreview();
+      showToast("Cambios sin codigo aplicados");
     }
 
     function injectMobileFix(html) {
