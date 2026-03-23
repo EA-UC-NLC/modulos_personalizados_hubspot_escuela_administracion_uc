@@ -37,6 +37,23 @@
       font-size: 0.78rem;
       font-weight: 600;
     }
+    nav .nav-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #dbeafe;
+      background: #17243a;
+    }
+    nav .nav-link.primary {
+      background: #00b0db;
+      border-color: #00b0db;
+      color: #ffffff;
+    }
     nav .count { margin-left: auto; color: #8b949e; font-size: 0.85rem; }
 
     .hero {
@@ -198,6 +215,8 @@
   <nav>
     <div class="logo">&#128247; HubSpot Modules <span>EA-UC</span></div>
     <span class="badge">v2.0</span>
+    <a class="nav-link" href="/visualizador.html">Visualizador HTML</a>
+    <a class="nav-link primary" href="/visualizador.html?m=hero_evento">Visualizador rapido</a>
     <span class="count">11 módulos</span>
   </nav>
 
