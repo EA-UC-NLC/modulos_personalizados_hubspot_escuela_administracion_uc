@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualizador de Modulos HTML</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07111f;
+      --bg-2: #0d1a2e;
+      --panel: rgba(10, 18, 33, 0.94);
+      --panel-2: rgba(18, 28, 46, 0.94);
+      --line: #24344d;
+      --text: #edf4ff;
+      --muted: #95a8c6;
+      --primary: #00b0db;
+      --primary-2: #008fb0;
+      --accent: #ffd166;
+      --card: #122034;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0,176,219,0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,209,102,0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, #091423 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(4, 10, 20, 0.76);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.2px;
+    }
+
+    .brand span { color: var(--primary); }
+
+    .pill {
+      border: 1px solid #26476a;
+      background: #10213a;
+      color: #a9cdfd;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .topbar .spacer { flex: 1; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: #12203a;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: #3a5681; }
+
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--primary-2);
+      border-color: var(--primary-2);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 0;
+    }
+
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: auto;
+    }
+
+    .sidebar-title {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      font-weight: 800;
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid #35527a;
+      background: #0d182b;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+    }
+
+    .search::placeholder { color: #7388a8; }
+
+    .category-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .category-chip {
+      border: 1px solid #2e4567;
+      background: #10203a;
+      color: #bfd7f8;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .category-chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .module-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .module-item {
+      border: 1px solid #243956;
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color .2s ease, transform .2s ease, background .2s ease;
+    }
+
+    .module-item:hover {
+      transform: translateY(-1px);
+      border-color: #3f6798;
+      background: #172844;
+    }
+
+    .module-item.active {
+      border-color: var(--primary);
+      background: linear-gradient(180deg, rgba(0,176,219,0.18), rgba(23,40,68,1));
+      box-shadow: 0 0 0 1px rgba(0,176,219,0.24);
+    }
+
+    .module-item small {
+      display: block;
+      color: #7ca8d8;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .module-item strong {
+      display: block;
+      font-size: 0.94rem;
+      margin-bottom: 6px;
+    }
+
+    .module-item p {
+      color: var(--muted);
+      font-size: 0.79rem;
+      line-height: 1.45;
+    }
+
+    .empty {
+      border: 1px dashed #375176;
+      background: rgba(16, 31, 56, 0.5);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    .viewer {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      padding: 16px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .hero-card,
+    .toolbar,
+    .stage {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      background: var(--panel-2);
+      box-shadow: 0 18px 48px rgba(0,0,0,0.26);
+    }
+
+    .hero-card {
+      padding: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 280px;
+    }
+
+    .hero-copy h1 {
+      font-size: 1.4rem;
+      line-height: 1.15;
+    }
+
+    .hero-copy p {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      max-width: 760px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta span {
+      border: 1px solid #2a4364;
+      background: #10223c;
+      color: #c6defd;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-group {
+      display: inline-flex;
+      border: 1px solid #304867;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .toggle-btn {
+      border: none;
+      background: #112039;
+      color: #9fb6d6;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .stage {
+      min-height: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .frame-stage {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(45deg, #0f1a2d 25%, transparent 25%),
+        linear-gradient(-45deg, #0f1a2d 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #0f1a2d 75%),
+        linear-gradient(-45deg, transparent 75%, #0f1a2d 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .frame-wrap {
+      width: 620px;
+      max-width: 100%;
+      min-height: 540px;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.38);
+      transition: width .25s ease;
+      flex: 0 0 auto;
+    }
+
+    .frame-wrap.mobile { width: 390px; }
+
+    .frame-wrap iframe {
+      width: 100%;
+      height: 72vh;
+      min-height: 540px;
+      border: none;
+      display: block;
+      background: #fff;
+    }
+
+    @media (max-width: 1080px) {
+      body {
+        grid-template-rows: auto 1fr;
+        overflow-y: auto;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        max-height: 42vh;
+      }
+
+      .viewer {
+        overflow: auto;
+      }
+
+      .frame-wrap iframe {
+        height: 66vh;
+        min-height: 460px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        padding: 12px;
+        flex-wrap: wrap;
+      }
+
+      .hero-copy h1 { font-size: 1.12rem; }
+      .frame-wrap.mobile,
+      .frame-wrap { width: 100%; }
+      .viewer,
+      .sidebar { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="btn" href="/">Volver</a>
+    <div class="brand">Visualizador <span>HTML</span></div>
+    <span class="pill">Catalogo</span>
+    <span class="pill">Presentacion</span>
+    <div class="spacer"></div>
+    <a class="btn" id="openViewerBtn" href="#">Abrir en visor</a>
+    <a class="btn primary" id="openSourceBtn" href="#" target="_blank" rel="noreferrer">Abrir HTML</a>
+  </header>
+
+  <main class="app">
+    <aside class="sidebar">
+      <div class="sidebar-title">Buscar elementos</div>
+      <input id="searchInput" class="search" type="text" placeholder="Busca por nombre, carpeta o categoria" />
+
+      <div class="sidebar-title">Categorias</div>
+      <div id="categoryList" class="category-list"></div>
+
+      <div class="sidebar-title">Modulos</div>
+      <div id="moduleList" class="module-list"></div>
+    </aside>
+
+    <section class="viewer">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <div class="meta" id="moduleMeta"></div>
+          <h1 id="moduleTitle">Selecciona un modulo</h1>
+          <p id="moduleDescription">Este visualizador te permite mostrar tus modulos HTML con una presentacion limpia, cambiar entre desktop y mobile, y compartir el acceso directo al visor individual o al archivo HTML.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="desktopBtn" type="button">Desktop</button>
+            <button class="toggle-btn" id="mobileBtn" type="button">Mobile</button>
+          </div>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn" id="copyViewerLinkBtn" type="button">Copiar link del visualizador</button>
+          <button class="btn" id="copyHtmlLinkBtn" type="button">Copiar link del HTML</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="frame-stage">
+          <div class="frame-wrap" id="frameWrap">
+            <iframe id="moduleFrame" title="Visualizacion del modulo"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const modules = [
+      {
+        id: "hero_evento",
+        name: "Hero Evento",
+        category: "Heroes",
+        folder: "modulos/hero_evento",
+        file: "/modulos/hero_evento/hero_evento.html",
+        description: "Banner para eventos con fecha, hora, lugar y CTA.",
+        tags: ["banner", "evento", "cta"]
+      },
+      {
+        id: "hero_diplomado",
+        name: "Hero Diplomado",
+        category: "Heroes",
+        folder: "modulos/hero_diplomado",
+        file: "/modulos/hero_diplomado/hero_diplomado.html",
+        description: "Modulo hero 50/50 para programas, diplomados y contenido institucional.",
+        tags: ["hero", "diplomado", "2 columnas"]
+      },
+      {
+        id: "hero_destacado",
+        name: "Hero Destacado",
+        category: "Heroes",
+        folder: "modulos/hero_destacado",
+        file: "/modulos/hero_destacado/hero_destacado.html",
+        description: "Hero con urgencia y contadores para destacar una convocatoria.",
+        tags: ["destacado", "urgencia", "hero"]
+      },
+      {
+        id: "cards_4col",
+        name: "Cards 4 Columnas",
+        category: "Tarjetas",
+        folder: "modulos/cards_4col",
+        file: "/modulos/cards_4col/cards_4col.html",
+        description: "Grilla de cuatro tarjetas para beneficios, caracteristicas o highlights.",
+        tags: ["cards", "4 columnas", "iconos"]
+      },
+      {
+        id: "cards_grid_2x2",
+        name: "Cards Grid 2x2",
+        category: "Tarjetas",
+        folder: "modulos/cards_grid_2x2",
+        file: "/modulos/cards_grid_2x2/cards_grid_2x2.html",
+        description: "Tarjetas 2x2 para testimonios, speakers o elementos destacados.",
+        tags: ["cards", "2x2", "grid"]
+      },
+      {
+        id: "event_list_program",
+        name: "Event List Program",
+        category: "Listados",
+        folder: "modulos/event_list_program",
+        file: "/modulos/event_list_program/event_list_program.html",
+        description: "Lista vertical de agenda, programa o hitos con horarios.",
+        tags: ["agenda", "listado", "eventos"]
+      },
+      {
+        id: "cta_buttons",
+        name: "CTA Buttons",
+        category: "CTA",
+        folder: "modulos/cta_buttons",
+        file: "/modulos/cta_buttons/cta_multiple.html",
+        description: "Coleccion de variantes de botones y llamadas a la accion.",
+        tags: ["cta", "botones", "acciones"]
+      },
+      {
+        id: "dividers_headers",
+        name: "Dividers and Headers",
+        category: "Separadores",
+        folder: "modulos/dividers_headers",
+        file: "/modulos/dividers_headers/divider_header.html",
+        description: "Separadores y headers para estructurar correos largos.",
+        tags: ["divider", "header", "estructura"]
+      },
+      {
+        id: "charla_mba_titulo",
+        name: "Charla MBA / Titulo",
+        category: "Correos MKT",
+        folder: "CorreosMKT/Charla_MBA_19-03-2026",
+        file: "/CorreosMKT/Charla_MBA_19-03-2026/titulo.html",
+        description: "Bloque de encabezado principal para la charla informativa MBA UC.",
+        tags: ["charla", "mba", "titulo"]
+      },
+      {
+        id: "charla_mba_parrafo_1",
+        name: "Charla MBA / Parrafo",
+        category: "Correos MKT",
+        folder: "CorreosMKT/Charla_MBA_19-03-2026",
+        file: "/CorreosMKT/Charla_MBA_19-03-2026/parrafo_1.html",
+        description: "Bloque de texto introductorio para invitacion comercial o academica.",
+        tags: ["charla", "mba", "texto"]
+      },
+      {
+        id: "charla_mba_silver_boxes",
+        name: "Charla MBA / Silver Boxes",
+        category: "Correos MKT",
+        folder: "CorreosMKT/Charla_MBA_19-03-2026",
+        file: "/CorreosMKT/Charla_MBA_19-03-2026/content_silver_boxes.html",
+        description: "Bloque de tarjetas informativas con fecha, hora y modalidad.",
+        tags: ["charla", "mba", "cards"]
+      }
+    ];
+
+    const searchInput = document.getElementById("searchInput");
+    const categoryList = document.getElementById("categoryList");
+    const moduleList = document.getElementById("moduleList");
+    const moduleTitle = document.getElementById("moduleTitle");
+    const moduleDescription = document.getElementById("moduleDescription");
+    const moduleMeta = document.getElementById("moduleMeta");
+    const moduleFrame = document.getElementById("moduleFrame");
+    const frameWrap = document.getElementById("frameWrap");
+    const openSourceBtn = document.getElementById("openSourceBtn");
+    const openViewerBtn = document.getElementById("openViewerBtn");
+    const desktopBtn = document.getElementById("desktopBtn");
+    const mobileBtn = document.getElementById("mobileBtn");
+    const copyViewerLinkBtn = document.getElementById("copyViewerLinkBtn");
+    const copyHtmlLinkBtn = document.getElementById("copyHtmlLinkBtn");
+
+    const params = new URLSearchParams(window.location.search);
+    let selectedCategory = "Todas";
+    let selectedId = params.get("m") || modules[0].id;
+
+    function getSelectedModule() {
+      return modules.find((item) => item.id === selectedId) || modules[0];
+    }
+
+    function updateQuery() {
+      const url = new URL(window.location.href);
+      url.searchParams.set("m", selectedId);
+      history.replaceState({}, "", url);
+    }
+
+    function renderCategories() {
+      categoryList.innerHTML = "";
+      const allCategories = ["Todas", ...new Set(modules.map((item) => item.category))];
+
+      allCategories.forEach((category) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "category-chip" + (selectedCategory === category ? " active" : "");
+        btn.textContent = category;
+        btn.onclick = () => {
+          selectedCategory = category;
+          renderCategories();
+          renderModuleList();
+        };
+        categoryList.appendChild(btn);
+      });
+    }
+
+    function filterModules() {
+      const term = searchInput.value.trim().toLowerCase();
+      return modules.filter((item) => {
+        const byCategory = selectedCategory === "Todas" || item.category === selectedCategory;
+        const haystack = [item.name, item.category, item.folder, item.description, ...(item.tags || [])]
+          .join(" ")
+          .toLowerCase();
+        const bySearch = !term || haystack.includes(term);
+        return byCategory && bySearch;
+      });
+    }
+
+    function renderModuleList() {
+      moduleList.innerHTML = "";
+      const filtered = filterModules();
+
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No hay modulos que coincidan con esa busqueda.";
+        moduleList.appendChild(empty);
+        return;
+      }
+
+      if (!filtered.some((item) => item.id === selectedId)) {
+        selectedId = filtered[0].id;
+        renderSelectedModule();
+      }
+
+      filtered.forEach((item) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "module-item" + (item.id === selectedId ? " active" : "");
+        card.innerHTML = `<small>${item.category}</small><strong>${item.name}</strong><p>${item.description}</p>`;
+        card.onclick = () => {
+          selectedId = item.id;
+          renderModuleList();
+          renderSelectedModule();
+        };
+        moduleList.appendChild(card);
+      });
+    }
+
+    function renderSelectedModule() {
+      const selected = getSelectedModule();
+      moduleTitle.textContent = selected.name;
+      moduleDescription.textContent = selected.description;
+      moduleFrame.src = selected.file;
+      openSourceBtn.href = selected.file;
+      openViewerBtn.href = `/viewer.html?m=${encodeURIComponent(selected.id)}&f=${encodeURIComponent(selected.file)}`;
+
+      moduleMeta.innerHTML = [
+        `<span>${selected.category}</span>`,
+        `<span>${selected.folder}</span>`,
+        ...(selected.tags || []).slice(0, 3).map((tag) => `<span>${tag}</span>`)
+      ].join("");
+
+      updateQuery();
+    }
+
+    searchInput.addEventListener("input", () => {
+      renderModuleList();
+    });
+
+    desktopBtn.addEventListener("click", () => {
+      frameWrap.classList.remove("mobile");
+      desktopBtn.classList.add("active");
+      mobileBtn.classList.remove("active");
+    });
+
+    mobileBtn.addEventListener("click", () => {
+      frameWrap.classList.add("mobile");
+      mobileBtn.classList.add("active");
+      desktopBtn.classList.remove("active");
+    });
+
+    copyViewerLinkBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(window.location.href);
+      copyViewerLinkBtn.textContent = "Link copiado";
+      setTimeout(() => copyViewerLinkBtn.textContent = "Copiar link del visualizador", 1400);
+    });
+
+    copyHtmlLinkBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(openSourceBtn.href);
+      copyHtmlLinkBtn.textContent = "Link copiado";
+      setTimeout(() => copyHtmlLinkBtn.textContent = "Copiar link del HTML", 1400);
+    });
+
+    renderCategories();
+    renderModuleList();
+    renderSelectedModule();
+  </script>
+</body>
+</html>
