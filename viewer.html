@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visor de Modulo - HubSpot EA-UC</title>
+  <title>Editor de Modulo - HubSpot EA-UC</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -402,6 +402,7 @@
 
   <div class="topbar">
     <a href="/" class="back-btn">&#8592; Galeria</a>
+    <a href="/visualizador.html" class="back-btn">Visualizador simple</a>
     <div class="module-name" id="moduleName">Cargando modulo...</div>
 
     <div class="toggle-group">
@@ -445,7 +446,7 @@
     <aside class="editor-area">
       <div class="editor-head">
         <div>
-          <div class="editor-title">Editor HTML</div>
+          <div class="editor-title">Editor avanzado HTML</div>
           <div class="editor-note">Edita el modulo, aplica cambios y exporta.</div>
         </div>
         <div class="editor-actions">
@@ -552,7 +553,7 @@
     let selectedElement = null;
 
     moduleNameEl.textContent = moduleName.replace(/_/g, " ");
-    document.title = moduleName.replace(/_/g, " ") + " - Visor HubSpot";
+    document.title = moduleName.replace(/_/g, " ") + " - Editor HubSpot";
 
     frame.addEventListener("load", () => {
       bindFrameSelection();
