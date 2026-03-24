@@ -284,6 +284,24 @@
       margin-top: 4px;
     }
 
+    .no-code-status {
+      font-size: 0.74rem;
+      color: #9fb6d2;
+      background: #0b1118;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 9px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .no-code-status.warn {
+      color: #ffd59b;
+      border-color: #5c4630;
+      background: #1f1811;
+    }
+
     .element-manager {
       border-top: 1px dashed var(--border);
       margin-top: 6px;
@@ -496,6 +514,8 @@
           <button class="mini-btn" onclick="syncNoCodeFromHTML()">Sincronizar</button>
         </div>
 
+        <div id="noCodeStatus" class="no-code-status">Sincroniza para detectar campos editables.</div>
+
         <div class="element-manager">
           <div class="manager-title">Gestor visual de elementos</div>
           <button id="selectModeBtn" class="mini-btn" onclick="toggleSelectMode()">Activar seleccion en preview</button>
@@ -544,6 +564,7 @@
     const ncPrimary = document.getElementById("ncPrimary");
     const ncAccent = document.getElementById("ncAccent");
     const ncDark = document.getElementById("ncDark");
+    const noCodeStatus = document.getElementById("noCodeStatus");
 
     let originalHTML = "";
     let currentHTML = "";
@@ -551,6 +572,11 @@
     let isSnippet = false;
     let selectMode = false;
     let selectedElement = null;
+    let noCodeTargets = {
+      titlePath: null,
+      subtitlePath: null,
+      ctaPath: null
+    };
 
     moduleNameEl.textContent = moduleName.replace(/_/g, " ");
     document.title = moduleName.replace(/_/g, " ") + " - Editor HubSpot";
@@ -643,9 +669,13 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
 
-      const heading = doc.querySelector("h1, h2, h3");
-      const paragraph = doc.querySelector("p");
-      const cta = doc.querySelector("a");
+      const heading = pickHeadingTarget(doc);
+      const paragraph = pickSubtitleTarget(doc);
+      const cta = pickCtaTarget(doc);
+
+      noCodeTargets.titlePath = heading ? getElementPath(heading) : null;
+      noCodeTargets.subtitlePath = paragraph ? getElementPath(paragraph) : null;
+      noCodeTargets.ctaPath = cta ? getElementPath(cta) : null;
 
       ncTitle.value = heading ? heading.textContent.trim() : "";
       ncSubtitle.value = paragraph ? paragraph.textContent.trim() : "";
@@ -658,6 +688,67 @@
       if (primaryMatch) ncPrimary.value = normalizeHex(primaryMatch[0]);
       if (accentMatch) ncAccent.value = normalizeHex(accentMatch[0]);
       if (darkMatch) ncDark.value = normalizeHex(darkMatch[0]);
+
+      const found = [
+        heading ? "titulo" : null,
+        paragraph ? "subtitulo" : null,
+        cta ? "cta" : null
+      ].filter(Boolean);
+
+      if (found.length) {
+        setNoCodeStatus("Detectados: " + found.join(", "));
+      } else {
+        setNoCodeStatus("No se detectaron campos editables automaticamente en este modulo.", true);
+      }
+    }
+
+    function setNoCodeStatus(message, warn = false) {
+      noCodeStatus.textContent = message;
+      noCodeStatus.classList.toggle("warn", warn);
+    }
+
+    function getElementPath(el) {
+      const path = [];
+      let node = el;
+
+      while (node && node.parentElement) {
+        if (node.tagName === "BODY") break;
+        const parent = node.parentElement;
+        const index = Array.prototype.indexOf.call(parent.children, node);
+        path.unshift(index);
+        node = parent;
+      }
+
+      return path;
+    }
+
+    function getElementByPath(doc, path) {
+      if (!Array.isArray(path)) return null;
+      let node = doc.body;
+
+      for (const index of path) {
+        if (!node || !node.children || !node.children[index]) {
+          return null;
+        }
+        node = node.children[index];
+      }
+
+      return node;
+    }
+
+    function pickHeadingTarget(doc) {
+      return Array.from(doc.querySelectorAll("h1, h2, h3"))
+        .find((el) => (el.textContent || "").trim().length > 0) || null;
+    }
+
+    function pickSubtitleTarget(doc) {
+      return Array.from(doc.querySelectorAll("p"))
+        .find((el) => (el.textContent || "").trim().length >= 12) || doc.querySelector("p");
+    }
+
+    function pickCtaTarget(doc) {
+      return Array.from(doc.querySelectorAll("a"))
+        .find((el) => (el.textContent || "").trim().length > 0) || null;
     }
 
     function normalizeHex(value) {
@@ -673,34 +764,39 @@
     }
 
     function applyNoCodeChanges() {
-      let nextHTML = currentHTML || editor.value || "";
+      const baseHTML = currentHTML || editor.value || "";
+      if (!baseHTML) return;
 
-      if (ncTitle.value.trim()) {
-        nextHTML = replaceFirstTagContent(
-          nextHTML,
-          /(<h[1-3][^>]*>)([\s\S]*?)(<\/h[1-3]>)/i,
-          ncTitle.value.trim()
-        );
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(baseHTML, "text/html");
+
+      let changedParts = [];
+
+      const titleTarget = getElementByPath(doc, noCodeTargets.titlePath) || pickHeadingTarget(doc);
+      const subtitleTarget = getElementByPath(doc, noCodeTargets.subtitlePath) || pickSubtitleTarget(doc);
+      const ctaTarget = getElementByPath(doc, noCodeTargets.ctaPath) || pickCtaTarget(doc);
+
+      if (titleTarget && ncTitle.value.trim()) {
+        titleTarget.textContent = ncTitle.value.trim();
+        changedParts.push("titulo");
       }
 
-      if (ncSubtitle.value.trim()) {
-        nextHTML = replaceFirstTagContent(
-          nextHTML,
-          /(<p[^>]*>)([\s\S]*?)(<\/p>)/i,
-          ncSubtitle.value.trim()
-        );
+      if (subtitleTarget && ncSubtitle.value.trim()) {
+        subtitleTarget.textContent = ncSubtitle.value.trim();
+        changedParts.push("subtitulo");
       }
 
-      if (ncCta.value.trim()) {
-        nextHTML = replaceFirstTagContent(
-          nextHTML,
-          /(<a[^>]*>)([\s\S]*?)(<\/a>)/i,
-          ncCta.value.trim()
-        );
+      if (ctaTarget && ncCta.value.trim()) {
+        ctaTarget.textContent = ncCta.value.trim();
+        changedParts.push("cta");
       }
+
+      let nextHTML = isSnippet
+        ? (doc.body ? doc.body.innerHTML.trim() : baseHTML)
+        : "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 
       // Reemplazos globales de paleta comunes en los modulos.
-      nextHTML = nextHTML
+      const withPalette = nextHTML
         .replace(/#00b0db/gi, ncPrimary.value)
         .replace(/#0095bc/gi, ncPrimary.value)
         .replace(/#ffd700/gi, ncAccent.value)
@@ -708,9 +804,23 @@
         .replace(/#03122e/gi, ncDark.value)
         .replace(/#03122E/g, ncDark.value);
 
+      if (withPalette !== nextHTML) {
+        changedParts.push("colores");
+      }
+
+      nextHTML = withPalette;
+
+      if (nextHTML === baseHTML) {
+        setNoCodeStatus("No hubo cambios aplicables para este modulo. Prueba con Sincronizar.", true);
+        showToast("No se aplicaron cambios");
+        return;
+      }
+
       currentHTML = nextHTML;
       editor.value = currentHTML;
       renderPreview();
+      syncNoCodeFromHTML();
+      setNoCodeStatus("Aplicado: " + changedParts.filter((v, i, a) => a.indexOf(v) === i).join(", "));
       showToast("Cambios sin codigo aplicados");
     }
 
